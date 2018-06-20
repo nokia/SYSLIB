@@ -1,0 +1,92 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains information on the packaging of the DAT server
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Load the library utility. */
+var libUtility = xdc.loadCapsule ("build/buildlib.xs");
+
+/* Package the common files */
+var demoFiles = libUtility.listAllFiles (".h", "common");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+demoFiles = libUtility.listAllFiles (".c", "common");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+
+/* Package the RAT Master files */
+var demoFiles = libUtility.listAllFiles (".h", "rat");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+demoFiles = libUtility.listAllFiles (".c", "rat");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+
+/* Package the Release9 files */
+var demoFiles = libUtility.listAllFiles (".h", "rel9");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".c", "rel9");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cmd", "rel9");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cfg", "rel9");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".txt", "rel9");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+
+/* Package the Release10 Deployment 1 files */
+var demoFiles = libUtility.listAllFiles (".h", "rel10-d1");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".c", "rel10-d1");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cmd", "rel10-d1");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cfg", "rel10-d1");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".txt", "rel10-d1");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+
+/* Package the Release10 Deployment 2 files */
+var demoFiles = libUtility.listAllFiles (".h", "rel10-d2");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".c", "rel10-d2");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cmd", "rel10-d2");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".cfg", "rel10-d2");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+var demoFiles = libUtility.listAllFiles (".txt", "rel10-d2");
+for (var k = 0 ; k < demoFiles.length; k++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = demoFiles[k];
+
+/* Package the additional files. */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "rel9.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "rel10D1.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "rel10D2.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "demoMaster.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+
+

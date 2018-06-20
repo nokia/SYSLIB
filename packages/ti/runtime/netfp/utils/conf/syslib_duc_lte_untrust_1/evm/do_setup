@@ -1,0 +1,30 @@
+#!/bin/sh
+#Configuration script to setup test environment
+
+#Setup a Public IPv4 address on eth0
+ifconfig eth0 10.10.10.2 up
+
+#Setup IPv4 default route
+ip route add default via 10.10.10.1 dev eth0
+
+#Setup a private IPv4 address for Control Plane (CP) and User Plane (UP) traffic
+ifconfig eth0:1 192.168.1.2 up
+
+#Setup a private IPv6 address for Control Plane (CP) and User Plane (UP) traffic
+ip addr add 7000::2/64 dev eth0:1 
+
+#Setup a private IPv4 address for Management Plane (MP) traffic
+ifconfig eth0:2 192.168.2.2 up
+# Setup Routes if install_routes is disabled from strongswan
+ip route add 6000::1/64 via 7000::1
+route add 158.218.100.0 gw 10.10.10.1
+
+#Setup IPSec related configuration files
+cp ./conf/common/caCert.der /etc/ipsec.d/cacerts/
+cp ./conf/common/evm/betaCert.der /etc/ipsec.d/certs/
+cp ./conf/common/evm/betaKey.der /etc/ipsec.d/private/
+cp ./conf/common/evm/ipsec.secrets /etc/
+cp ./conf/syslib_duc_lte_untrust_1/evm/ipsec.conf /etc/
+
+#Start the Strongswan IKEv2 daemon
+ipsec start

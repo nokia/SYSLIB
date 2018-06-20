@@ -1,0 +1,708 @@
+/dts-v1/;
+
+/* Keystone II policy containing reserving resources used by Linux Kernel */
+
+/ {
+    /* List of Instance names: */
+    valid-instances = "Rm_Server",
+                      "Rm_K2mr",
+                      "Rm_FZM";
+    qmss {
+        /* QMSS in joint mode affects only -qm1 resource */
+        control-qm1 {
+            assignments = <0 1>, "iu = (*)";
+        };
+        control-qm2 {
+            assignments = <0 1>, "iu = (*)";
+        };
+
+        linkram-control-qm1 {
+            assignments = <0 1>, "(*)";             /* Used by Kernel */
+        };
+        linkram-control-qm2 {
+            assignments = <0 1>, "(*)";             /* Used by Kernel */
+        };
+
+        linkram-int-qm1 {
+            /* linux provided 0x18000 descriptors of linking RAM but uses 0x4000 to 0x8000 */
+            assignments = <0x00000000 0x00006C00>, "(*)",
+                          <0x00006C00 0x00001400>, "iu = (*)"; /* used by region 14(4K), and 15(1K) */
+        };
+        linkram-int-qm2 {
+            /* linux provided 0x18000 descriptors of linking RAM but uses 0x4000 to 0x8000 */
+            assignments = <0x00000000 0x00006C00>, "(*)",
+                          <0x00006C00 0x00001400>, "iu = (*)"; /* used by region 14(4K), and 15(1K) */
+        };
+        linkram-ext-qm1 {
+            assignments = <0x00008000 0x00010000>, "(*)",
+                          <0x00018000 0x00008000>, "iu = (Rm_FZM)", /* used by region 19(16K), 20(8K), 21(8K) */
+                          <0x00020000 0x00005800>, "(*)",
+                          <0x00025800 0x00000800>, "iu = (Rm_K2mr)"; /* used by region 8 for 2K */
+        };
+        linkram-ext-qm2 {
+            assignments = <0x00008000 0x00010000>, "(*)",
+                          <0x00018000 0x00008000>, "iu = (Rm_FZM)", /* used by region 19(16K), 20(8K), 21(8K) */
+                          <0x00020000 0x00005800>, "(*)",
+                          <0x00025800 0x00000800>, "iu = (Rm_K2mr)"; /* used by region 8 for 2K */
+        };
+
+        memory-regions-qm1 {
+            assignments = <0  8>, "(*)",
+                          <8  1>,  "iu = (Rm_K2mr)",
+                          <9  5>,  "(*)",
+                          <14 2>,  "iu = (*)",
+                          <16 3>,  "(*)",
+                          <19 2>,  "iu = (*)",
+                          <21 1>,  "iu = (*)", /* reserved for SFN */
+                          <22 42>, "(*)";
+        };
+        memory-regions-qm2 {
+            assignments = <0  8>, "(*)",
+                          <8  1>,  "iu = (Rm_K2mr)",
+                          <9  5>,  "(*)",
+                          <14 2>,  "iu = (*)",
+                          <16 3>,  "(*)",
+                          <19 2>,  "iu = (*)",
+                          <21 1>,  "iu = (*)", /* reserved for SFN */
+                          <22 42>, "(*)";
+        };
+
+        LOW_PRIORITY_QUEUE-qm1 {
+            /* this is loosely coupled with accumulator-ch channels 32-47.  These queues are
+             * just suggested to be paired with these channels, the accumulator can be sw
+             * configured to use any queue */
+            assignments = <0 128>,   "(*)", /* suggested for channels 32-35 */
+                          <128 128>, "(*)", /* used by linux (accumulator-low-#); linux pairs these to channels 36-39 */
+                          <256 256>, "(*)"; /* suggested for channels 40-47 */
+        };
+        AIF_QUEUE-qm1 {
+            assignments = <512 128>, "(*)";
+        };
+        PASS_QUEUE-qm1 {
+            assignments = <640  9>,  "iu = (*)";     /* used by both kernel and DSP */
+        };
+        INTC_QUEUE-qm1 {
+            assignments = <652 6>, "(*)";
+        };
+        INTC_SET2_QUEUE-qm1 {
+            assignments = <658 8>, "(*)";
+        };
+        INTC_SET3_QUEUE-qm1 {
+            assignments = <666 6>, "(*)";
+        };
+        SRIO_QUEUE-qm1 {
+            assignments = <672 16>, "(*)";
+        };
+        FFTC_A_QUEUE-qm1 {
+            assignments = <688 4>, "(*)";
+        };
+        FFTC_B_QUEUE-qm1 {
+            assignments = <692 4>, "(*)";
+        };
+        HIGH_PRIORITY_QUEUE-qm1 {
+            /* this is loosely coupled with accumulator-ch channels 0-15.  These queues are
+             * just suggested to be paired with these channels, the accumulator can be sw
+             * configured to use any queue */
+            assignments = <704 16>, "(*)", /* suggested for channels 0-15 */
+                          <720 8>,  "(*)", /* Declared, but not used, by linux (accumulator-high.values). */
+                          <728 8>,  "(*)"; /* suggested for channels 24-31 */
+        };
+        STARVATION_COUNTER_QUEUE-qm2 {
+            assignments = <736 64>, "(*)";
+        };
+        INFRASTRUCTURE_QUEUE-qm1 {
+            assignments = <800  1>,  "iu = (Rm_K2mr)", /* used by K2mr as tx queue for ARM cores */
+                          <801  4>,  "iu = (Rm_FZM)",
+                          <805  1>,  "iu = (Rm_FZM)",   /* used by NetFP Reassembly Service */
+                          <806  1>,  "iu = (Rm_FZM)",   /* used by IWF NetFP DmaSvc as tx queue */
+                          <807  1>,  "iu = (Rm_FZM)",   /* used by SFN NetFP DmaSvc as tx queue */
+                          <808  2>,  "iu = (Rm_FZM)",
+                          <810  1>,  "iu = (Rm_K2mr)",
+                          <811  1>,  "(*)",
+                          <812  1>,  "iu = (Rm_FZM)",
+                          <813  19>,  "(*)";
+        };
+        TRAFFIC_SHAPING_QUEUE-qm1 {
+            assignments = <832 32>, "(*)";
+        };
+        BCP_QUEUE-qm1 {
+            assignments = <864 8>, "(*)";
+        };
+        FFTC_C_QUEUE-qm1 {
+            assignments = <872 4>, "(*)";
+        };
+        FFTC_D_QUEUE-qm1 {
+            assignments = <876 4>, "(*)";
+        };
+        FFTC_E_QUEUE-qm1 {
+            assignments = <880 4>, "(*)";
+        };
+        FFTC_F_QUEUE-qm1 {
+            assignments = <884 4>, "(*)";
+        };
+        GENERAL_PURPOSE_QUEUE-qm1 {
+            assignments = <896  3104>,  "(*)",
+                          <4000 64>,    "(*)",       /* Used by Kernel */
+                          <4064 2336>,  "(*)",
+
+                          /* 6400-6477 is taken by linux for qostree2, but DSP can transmit via "fastpath" queues */
+                          <6400 72>,    "u = (*)",   /* qos queues for DSP (fastpath-best-effort, fastpath-hp, 4g-cos#, 3g-cos#, wifi-cos#) use (open by number) not init */
+                          <6472 6>,     "(*)",       /* qos queues for linux (linux-best-effort, linux-cos#, linux-hp) - DSP can't use */
+                          <6478 114>,   "(*)",       /* unconfigured QoS/Linux queues (qos-inputs-2) */
+
+                          <6592 1408>,  "(*)",
+
+                          /* 8000-8191 is taken by linux for qostree but DSP can transmit via "fastpath" queues */
+                          <8000 72>,    "u = (*)",   /* qos queues for DSP (fastpath-best-effort, fastpath-hp, 4g-cos#, 3g-cos#, wifi-cos#) use (open by number) not init */
+                          <8072 6>,     "(*)",       /* qos queues for linux (linux-best-effort, linux-cos#, linux-hp) - DSP can't use */
+                          <8078 114>,   "(*)";       /* unconfigured QoS/Linux queues (qos-inputs-1) */
+        };
+        LOW_PRIORITY_QUEUE-qm2 {
+            assignments = <8192 512>, "(*)";
+        };
+        INTC_SET4_QUEUE-qm2 {
+            assignments = <8844 20>, "(*)";
+        };
+        GIC400_QUEUE-qm2 {
+            assignments = <8704 17>,    "(*)",             /* Used by Kernel */
+                          <8721 2>,   "iu = (Rm_K2mr)",
+                          <8723 2>,   "iu = (Rm_FZM)",  /* IWF Disp, SFN Disp each use 1 */
+                          <8725 11>,  "(*)";
+        };
+        EDMA_4_QUEUE-qm2 {
+            assignments = <8736 8>, "(*)";
+        };
+        HLINK_BROADCAST_QUEUE-qm2 {
+            assignments = <8744 8>, "(*)";
+        };
+        XGE_QUEUE-qm2 {
+            assignments = <8752 8>, "(*)";   /* can be used by both dsp and kernel */
+        };
+        HLINK_0_QUEUE-qm2 {
+            assignments = <8796 16>, "(*)";
+        };
+        DXB_QUEUE-qm2 {
+            assignments = <8836 8>, "(*)";
+        };
+        HLINK_1_QUEUE-qm2 {
+            assignments = <8864 16>, "(*)";
+        };
+        HIGH_PRIORITY_QUEUE-qm2 {
+            assignments = <8896 24>, "(*)",
+                          <8920 8>, "(*)";
+        };
+        STARVATION_COUNTER_QUEUE-qm1 {
+            assignments = <8928 32>, "(*)",  /* used by CCS-RT */
+                          <8960 32>, "iu = (*)";
+        };
+        QM2_INFRASTRUCTURE_QUEUE-qm2 {
+            assignments = <8992  1>, "(*)",
+                          <8993  2>, "iu=(Rm_FZM)",     /* used by SFN */
+                          <8995  1>, "iu=(Rm_FZM)",     /* used in IWF as SysCom tx queue */
+                          <8996  1>, "iu=(Rm_FZM)",     /* used in SFN as SysCom tx queue */
+                          <8997  1>, "iu=(Rm_K2mr)",    /* used in K2mr as tx queue */
+                          <8998 26>, "(*)";
+        };
+        GENERAL_PURPOSE_QUEUE-qm2 {
+            assignments = <9024 4234>, "(*)",
+                          <13258 4>, "iu = (Rm_FZM)",  /* DL Shaper Queues for DSP cores */
+                          <13262 1>, "iu = (Rm_FZM)",  /* DL Shaper Queue for ARM core (CCSRT) */
+                          <13263 737>, "(*)",
+                          <14000 220>, "iu = (Rm_FZM)",
+                          <14220 4>, "iu = (Rm_FZM)", /* used for QMSS Barrier */
+                          <14224 32>, "iu = (Rm_K2mr)",
+                          <14256 2128>, "(*)";
+        };
+
+        firmware-pdsp {
+            assignments = <0 1>, "    (*)", /* pdsp0: accumulator 0 downloaded by linux */
+                          <1 1>, "    (*)", /* pdsp1: for em scheduler if event machine is used (not downloaded by linux) */
+                          <2 1>, "    (*)", /* pdsp2: for accumulator 1 on second intd (not downloaded by linux) */
+                          <3 1>, "    (*)", /* pdsp3: qostree downloaded by linux */
+                          <4 1>, "    (*)", /* pdsp4: for em scheduler if event machine is used (not downloaded by linux) */
+                          <5 1>, "    (*)", /* pdsp5: for em scheduler if event machine is used (not downloaded by linux) */
+                          <6 1>, "    (*)", /* pdsp6: for em router if event machine is used (not downloaded by linux) */
+                          <7 1>, "    (*)"; /* pdsp7: qostree2 downloaded by linux */
+        };
+        accumulator0-ch { /* accumulator using first INTD */
+            assignments = <0 16>, "     (*)",    /* high priority 0-15 available for everyone */
+                          <16 8>, "     (*)",    /* declared but not used by linux, subject to change */
+                          <24 8>, "     (*)",    /* last 8 high priority are used by event machine, available in non EM use case */
+                          <32 4>, "     (*)",    /* first 4 low priority are used by event machine, available in non EM use case */
+                          <36 4>, "     (*)",    /* next 4 low priority are used by linux (accumulator-low-#) */
+                          <40 8>, "     (*)";    /* available for all */
+        };
+        accumulator1-ch { /* accumulator using second INTD */
+            assignments = <0 48>, "(*)";    /* linux doesn't use it */
+        };
+    }; /* qmss */
+
+    cppi {
+        srio-rx-ch {
+            assignments = <0 16>, "(*)";
+        };
+        srio-tx-ch {
+            assignments = <0 16>, "(*)";
+        };
+        srio-rx-flow-id {
+            assignments = <0 20>, "(*)";
+        };
+
+        aif-rx-ch {
+            assignments = <0 129>, "(*)";
+        };
+        aif-tx-ch {
+            assignments = <0 129>, "(*)";
+        };
+        aif-rx-flow-id {
+            assignments = <0 129>, "(*)";
+        };
+
+        fftc-a-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-a-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-a-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        fftc-b-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-b-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-b-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        fftc-c-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-c-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-c-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        fftc-d-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-d-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-d-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        fftc-e-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-e-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-e-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        fftc-f-rx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-f-tx-ch {
+            assignments = <0 4>, "(*)";
+        };
+        fftc-f-rx-flow-id {
+            assignments = <0 8>, "(*)";
+        };
+
+        pass-rx-ch {
+            assignments = <0 24>, "    (*)"; /* initialized by kernel */
+        };
+        pass-tx-ch {
+            assignments = <0 7>, "     (*)", /* initialized by kernel, can directly open queuse */
+                          <7 1>, "iu = (*)", /* SA channel.  Linux initializes, but some applications need to enable/disable on fly */
+                          <8 1>, "     (*)"; /* initialized by kernel, can directly open queuse */
+        };
+        pass-rx-flow-id {
+            assignments = <0  8>, "(*)", /* Used by L2 */
+                          <8 14>, "iu = (*)", /* available for netfp */
+                          <22 5>, "     (*)", /* used by kernel (netrx0, netrx1, netrx2, netrx3, crypto-rx0) */
+                          <27 2>, "iu = (*)", /* available for netfp*/
+                          <29 3>, "     (*)"; /* used by kernel (DSP HWAPI, RT HWAPI, parx) */
+        };
+
+        /*****************************************************************************************
+         * NOTE: The name proxy(s) for DSP-ARM communication reserves 2 sets of infrastructure
+         * resources which are required used by the agent server in each realm.
+         *
+         * LTE9A RAT ARM Agent Server resource usage
+         *    Local Flow Id  0 :
+         *    Rx Channel     0 :
+         *    Tx Channel     1 :
+         *
+         * LTE9A RAT DSP Agent Server resource usage
+         *    Local Flow Id  1 :
+         *    Rx Channel     1 :
+         *    Tx Channel     0 :
+         *
+         * LTE9A RAT ARM Agent Server resource usage
+         *    Local Flow Id  2 :
+         *    Rx Channel     2 :
+         *    Tx Channel     3 :
+         *
+         * LTE9A RAT DSP Agent Server resource usage
+         *    Local Flow Id  3 :
+         *    Rx Channel     3 :
+         *    Tx Channel     2 :
+         *
+         * It is assumed that the name proxy in the DSP is executing in the L2 domain. If this is
+         * not the case please change the RM client name accordingly.
+         *
+         * For the Release 10; the name proxy will execute on the DSP in the L1 domain. The L2 domain
+         * whether it executes on DSP/ARM will also execute the name proxy. There could be 2 L2
+         * domains L2A handling L1A and L2B handling L2B.
+         ********************************************************************************************/
+        qmss-qm1-rx-flow-id {
+            assignments = <0 1>,  "(*)",
+                          <1 4>,  "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <5 4>,  "iu = (Rm_FZM)", /* Statically assigned (used for NetFP Reassembly Service) */
+                          <9 1>,  "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <10 2>, "iu = (Rm_K2mr)",/* Used by K2mr Rx */
+                          <12 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by NetFP Syscom Rx in DmaSvc) */
+                          <13 1>, "(*)",
+                          <14 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by NetFP DmaSvc for L2 or SFN) */
+                          <15 8>, "(*)",
+                          <23 41>,"(*)";
+        };
+        qmss-qm1-rx-ch {
+            assignments = <0 1>, "iu = (Rm_K2mr)", /* Used by K2mr for Tx to ARM cores */
+                          <1 4>, "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <5 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by NetFP Reassembly Service) */
+                          <6 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by IWF NetFP DmaSvc TX) */
+                          <7 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by SFN NetFP DmaSvc TX) */
+                          <8 2>, "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <10 1>, "iu = (Rm_K2mr)", /* Used by K2mr */
+                          <11 21>, "(*)";
+        };
+        qmss-qm1-tx-ch {
+            assignments = <0 1>, "iu = (Rm_K2mr)", /* Used by K2mr for Tx to ARM cores */
+                          <1 4>, "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <5 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by NetFP Reassembly Service) */
+                          <6 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by IWF NetFP DmaSvc TX) */
+                          <7 1>, "iu = (Rm_FZM)", /* Statically assigned (Used by SFN NetFP DmaSvc TX) */
+                          <8 2>, "iu = (Rm_FZM)", /* Available for dynamic allocation by syslib/netfp */
+                          <10 1>, "iu = (Rm_K2mr)", /* Used by K2mr */
+                          <11 21>, "(*)";
+        };
+
+        qmss-qm2-rx-ch {
+            assignments = <0  1>, "(*)",        /* reserved */
+                          <1  2>, "iu = (Rm_FZM)",   /* reserved for SFN */
+                          <3  1>, "iu = (Rm_FZM)",  /* Statically assigned used in IWF SysCom Tx */
+                          <4  1>, "iu = (Rm_FZM)",  /* Statically assigned used in SFN SysCom Tx */
+                          <5  1>, "iu = (Rm_K2mr)", /* used in K2mr to send pkt to DSP cores */
+                          <6 26>, "(*)";
+        };
+        qmss-qm2-tx-ch {
+            assignments = <0  1>, "(*)",        /* reserved */
+                          <1  2>, "iu = (Rm_FZM)",  /* reserved for SFN */
+                          <3  1>, "iu = (Rm_FZM)",  /* Statically assigned used in IWF SysCom Tx */
+                          <4  1>, "iu = (Rm_FZM)",  /* Statically assigned used in SFN SysCom Tx */
+                          <5  1>, "iu = (Rm_K2mr)", /* used in K2mr to send pkt to DSP cores */
+                          <6 26>, "(*)";
+        };
+        qmss-qm2-rx-flow-id {
+            assignments = <0  1>, "(*)",        /* reserved */
+                          <1  2>, "iu = (*)",   /* reserved for SFN */
+                          <3 61>, "(*)";
+        };
+
+        bcp-rx-ch {
+            assignments = <0 8>, "(*)";
+        };
+        bcp-tx-ch {
+            assignments = <0 8>, "(*)";
+        };
+        bcp-rx-flow-id {
+            assignments = <0 64>, "(*)";
+        };
+
+        xge-rx-ch {
+            assignments = <0 16>, "    (*)"; /* initialized by kernel */
+        };
+        xge-tx-ch {
+            assignments = <0 8>, "     (*)"; /* initialized by kernel, directly open the queues */
+        };
+        xge-rx-flow-id {
+            assignments = <0 1>,  "     (*)", /* used by kernel (xgerx0) */
+                          <1 7>,  "     (*)", /* available */
+                          <8 1>,  "     (*)", /* used by kernel (xgerx1) */
+                          <9 23>, "     (*)"; /* available */
+        };
+    }; /* cppi */
+
+    pa {
+        pa-lut {
+            assignments = <0 5>, "iu = (*)";
+        };
+        pa-firmware {
+            assignments = <0 1>, "(*)"; /* linux downloads PA firmware */
+        };
+        pa-32bUsrStats {
+            assignments = <0 512>, "iu = (*)";
+        };
+        pa-64bUsrStats {
+            assignments = <0 256>, "iu = (*)";
+        };
+        pa-num64bUserStats {
+            assignments = <0 1>, "iu = (*)";
+        };
+    }; /* pa */
+
+    syslib {
+        /*****************************************************************************
+         * Hardware semaphores:
+         *  - All hardware semaphores are assigned to all the RM instances
+         *****************************************************************************/
+        hw-semaphores {
+            assignments = <8 16>, "(*)";
+        };
+
+        /*****************************************************************************
+         * High Priority accumulated channels:
+         *  - Each core has 7 assigned channels each of which is available to all the
+         *    RM instances.
+         *  - ARM has 8 accumulated channels allocated for its use
+         *****************************************************************************/
+        hi_accumulator_channel_arm {
+            assignments =   <56 1>, "(*)",
+                            <57 1>, "(*)",
+                            <58 1>, "(*)",
+                            <59 1>, "(*)",
+                            <60 1>, "(*)",
+                            <61 1>, "(*)",
+                            <62 1>, "(*)",
+                            <63 1>, "(*)";
+        };
+        hi_accumulator_channel_0 {
+            assignments =   <0  1>, "(*)",
+                            <8  1>, "(*)",
+                            <16 1>, "(*)",
+                            <24 1>, "(*)",
+                            <32 1>, "(*)",
+                            <40 1>, "(*)",
+                            <48 1>, "(*)";
+        };
+        hi_accumulator_channel_1 {
+            assignments =   <1  1>, "(*)",
+                            <9  1>, "(*)",
+                            <17 1>, "(*)",
+                            <25 1>, "(*)",
+                            <33 1>, "(*)",
+                            <41 1>, "(*)",
+                            <49 1>, "(*)";
+        };
+        hi_accumulator_channel_2 {
+            assignments =   <2  1>, "(*)",
+                            <10 1>, "(*)",
+                            <18 1>, "(*)",
+                            <26 1>, "(*)",
+                            <34 1>, "(*)",
+                            <42 1>, "(*)",
+                            <50 1>, "(*)";
+        };
+        hi_accumulator_channel_3 {
+            assignments =   <3  1>, "(*)",
+                            <11 1>, "(*)",
+                            <19 1>, "(*)",
+                            <27 1>, "(*)",
+                            <35 1>, "(*)",
+                            <43 1>, "(*)",
+                            <51 1>, "(*)";
+        };
+        hi_accumulator_channel_4 {
+            assignments =   <4  1>, "(*)",
+                            <12 1>, "(*)",
+                            <20 1>, "(*)",
+                            <28 1>, "(*)",
+                            <36 1>, "(*)",
+                            <44 1>, "(*)",
+                            <52 1>, "(*)";
+        };
+        hi_accumulator_channel_5 {
+            assignments =   <5  1>, "(*)",
+                            <13 1>, "(*)",
+                            <21 1>, "(*)",
+                            <29 1>, "(*)",
+                            <37 1>, "(*)",
+                            <45 1>, "(*)",
+                            <53 1>, "(*)";
+        };
+        hi_accumulator_channel_6 {
+            assignments =   <6  1>, "(*)",
+                            <14 1>, "(*)",
+                            <22 1>, "(*)",
+                            <30 1>, "(*)",
+                            <38 1>, "(*)",
+                            <46 1>, "(*)",
+                            <54 1>, "(*)";
+        };
+        hi_accumulator_channel_7 {
+            assignments =   <7  1>, "(*)",
+                            <15 1>, "(*)",
+                            <23 1>, "(*)",
+                            <31 1>, "(*)",
+                            <39 1>, "(*)",
+                            <47 1>, "(*)",
+                            <55 1>, "(*)",
+                            <63 1>, "(*)";
+        };
+
+        /*****************************************************************************
+         * System Interrupt Mappings:
+         *  - Each system interrupt on each is available to all RM instances.
+         *****************************************************************************/
+        cic_output_0 {
+            assignments = <8  8>  , "(*)",
+                          <64 10> , "(*)";
+        };
+        cic_output_1 {
+            assignments = <24 8>  , "(*)",
+                          <74 10> , "(*)";
+        };
+        cic_output_2 {
+            assignments = <40 8>  , "(*)",
+                          <84 10> , "(*)";
+        };
+        cic_output_3 {
+            assignments = <56 8>  , "(*)",
+                          <94 10> , "(*)";
+        };
+        cic_output_4 {
+            assignments = <8  8>  , "(*)",
+                          <64 10> , "(*)";
+        };
+        cic_output_5 {
+            assignments = <24 8>  , "(*)",
+                          <74 10> , "(*)";
+        };
+        cic_output_6 {
+            assignments = <40 8>  , "(*)",
+                          <84 10> , "(*)";
+        };
+        cic_output_7 {
+            assignments = <56 8>  , "(*)",
+                          <94 10> , "(*)";
+        };
+
+        /*****************************************************************************
+         * Direct Interrupt Mappings:
+         *  - On the DSP all the direct interrupt queues are available to all RM
+         *    instances
+         *  - On ARM however we need to be careful since the GIC queues are also used
+         *    by the Linux kernel; so any changes in the GIC queue assignments would
+         *    need to be aligned with the kernel DTB file also.
+         *  - INTC-SET2 is shared but currently has been allocated to ARM
+         *****************************************************************************/
+        direct_interrupt_dsp {
+            assignments = <652  6>   , "(*)",
+                          <666  6>   , "(*)",
+                          <8844 20>  , "(*)";
+        };
+        direct_interrupt_arm {
+            assignments =
+                          <658  8>  , "(*)",
+                          <8704 17> , "(*)",    /* Used by the Linux kernel. */
+                          <8721 2>  , "iu = (Rm_K2mr)",
+                          <8723 2>  , "iu = (Rm_FZM)",
+                          <8725 11>  , "     (*)";
+        };
+         /*****************************************************************************
+         * LUT1-0 entries for Ethernet Rules
+         ****************************************************************************/
+        lut10_region_loam {
+            assignments = <0 3>, "iu = (*)";
+        };
+        lut10_region_br0_ip {
+            assignments = <15 2>, "iu = (*)";
+        };
+        lut10_region_br0_non_ip {
+            assignments = <17 1>, "iu = (*)";
+        };
+        lut10_region_mac {
+            assignments = <18 13>, "iu = (*)";
+        };
+        lut10_region_non_mac {
+            assignments = <31 28>, "iu = (*)";
+        };
+        lut10_region_promis {
+            assignments = <59 1>, "iu = (*)";
+        };
+
+        /*****************************************************************************
+         * LUT1 entries
+         * - The following section defines how LUT1 entries will be used in fast path
+             createion.
+         * - There are 3 groups for both LUT1-1 and LUT1-2
+             1. Normal Fast Path
+             2. Wild Carding Fast Path
+         *****************************************************************************/
+        /* LUT1-1 */
+        lut11_fastpath_index {
+            assignments = <0 58>, "iu = (*)";
+        };
+        lut11_wildcarding_index {
+            assignments = <58 6>, "iu = (*)";
+        };
+
+        /* LUT1-2 */
+        lut12_fastpath_index {
+            assignments = <0 58>, "iu = (*)";
+        };
+        lut12_wildcarding_index {
+            assignments = <58 6>, "iu = (*)";
+        };
+
+    }; /* syslib */
+
+    qmssBarrier {
+        QMSS_BarrierQ_DDR {
+            assignments = <14220 1>, "iu = (Rm_FZM)";
+        };
+        QMSS_BarrierQ_DDR_NetCP
+        {
+            assignments = <14222 1>, "iu = (Rm_FZM)";
+        };
+        QMSS_BarrierQ_DDR_PDSPID {
+            assignments = <6 1>, "iu = (Rm_FZM)";
+        };
+/*
+        QMSS_BarrierQ_MSMC {
+            assignments = <14221 1>, "iu = (Rm_FZM)";
+        };
+*/
+        QMSS_BarrierQ_MSMC_NetCP {
+            assignments = <14223 1>, "iu = (Rm_FZM)";
+        };
+/*
+        QMSS_BarrierQ_MSMC_PDSPID {
+            assignments = <6 1>, "iu = (Rm_FZM)";
+        };
+*/
+    }; /* qmssBarrier */
+
+    phy {
+        /*****************************************************************************
+         * EDMA3 Instances are used between the PHY front end and TCP3D
+         *****************************************************************************/
+        edma3_frontend {
+            assignments = <1 2>, "(*)";
+        };
+        edma3_tcp3 {
+            assignments = <3 2>, "(*)";
+        };
+    };  /* phy */
+};

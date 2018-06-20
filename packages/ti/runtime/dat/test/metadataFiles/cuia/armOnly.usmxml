@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<java version="1.6.0_13" class="java.beans.XMLDecoder">
+ <object class="com.ti.uia.host.core.Session$Config">
+  <void property="endpoints">
+   <void method="add">
+    <object class="com.ti.uia.host.core.Session$Config$Endpoint">
+     <void property="clockFreq">
+      <long>1000000000</long>
+     </void>
+     <void property="name">
+      <string>armCore</string>
+     </void>
+     <void property="outFile">
+      <string>C:\tftpd64\syslib4x_arm\test_dat_k2h.out</string>
+     </void>
+     <void property="processEndpointID">
+      <int>39186</int>
+     </void>
+     <void property="rtaFile">
+      <string>C:\tftpd64\syslib4x_arm\cuia.rta.xml</string>
+     </void>
+     <void property="uiaFile">
+      <string>C:\tftpd64\syslib4x_arm\cuia.uia.xml</string>
+     </void>
+    </object>
+   </void>
+  </void>
+  <void property="eventTransport">
+   <object class="com.ti.uia.host.core.Session$Config$Transport">
+    <void property="address">
+     <string>192.168.1.10</string>
+    </void>
+    <void property="customProperties">
+     <void method="put">
+      <string>Port</string>
+      <int>1235</int>
+     </void>
+     <void method="put">
+      <string>Address</string>
+      <string>192.168.1.10</string>
+     </void>
+    </void>
+    <void property="port">
+     <int>1235</int>
+    </void>
+   </object>
+  </void>
+  <void property="msgTransport">
+   <object class="com.ti.uia.host.core.Session$Config$Transport">
+    <void property="type">
+     <string>None</string>
+    </void>
+   </object>
+  </void>
+ </object>
+</java>

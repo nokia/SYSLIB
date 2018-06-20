@@ -1,0 +1,74 @@
+/******************************************************************************
+ * FILE PURPOSE: Build description for the Resource manager
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains the build specification and description for the
+ *  Packet Library
+ *
+ * Copyright (C) 2011 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* List of all subdirectories that combine to make the Resource Management Package. */
+var subDirectories = [ "src", "docs" ];
+
+/* Package name */
+var pkgName = Pkg.name.replace(/\./g, "_");
+
+/* Cycle through all the sub-directories and build all the files */
+for (var i = 0; i < subDirectories.length; i++)
+{
+    /* Load the capsule in the sub directory. */
+    var caps = xdc.loadCapsule (subDirectories[i]+"/Module.xs");
+
+    print ("Building directory " + subDirectories[i]);
+
+    /* Build the capsule. */
+    caps.modBuild();
+
+    /* Package the module.xs files for building via package */
+    Pkg.otherFiles[Pkg.otherFiles.length++] = subDirectories[i]+"/Module.xs";
+}
+
+/* Package the remaining files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "Settings.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "resmgr.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "docs/Doxyfile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+
+/* Package the K2H DTS Files. */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/policy_dsp_arm_syslib.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/global-resource-list.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/k2hk.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/k2hk-clocks.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/k2hk-evm.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/k2hk-net.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/keystone.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/keystone-clocks.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/keystone-qostree.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2h/skeleton.dtsi";
+
+/* Package the K2L DTS Files. */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/policy_dsp_arm_syslib.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/global-resource-list.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/k2l.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/k2l-clocks.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/k2l-evm.dts";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/k2l-net.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/keystone.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/keystone-clocks.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/keystone-qostree.dtsi";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dts/k2l/skeleton.dtsi";
+
+/* Package the build files. */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "resmgrlib.mak";
+
+/* Package the RESMGR libraries */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "lib/libresmgr_" + Device[device] + ".a";
+

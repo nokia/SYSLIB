@@ -1,0 +1,337 @@
+# NETFP Ethernet Rule test file
+
+# Rule #1  Cascading eth0  -> eth1
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    #
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    # Any MAC address is expressed as 0.0.0.0.0.0
+    #
+    dstMac              = 00.04.23.BD.95.0F
+
+    #
+    # Ingress interface Name
+    #
+    ingressIfName       = eth0
+
+    #
+    # Egress interface Name
+    #
+    egressIfName       = eth1
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType            = EMAC
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter      = 1
+}
+
+# Rule #2 Cascading eth1 -> eth0
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    #
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Source MacAddress used to match rules in LUT 1-0
+    #
+    srcMac              = 00.04.23.BD.95.0F
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    #
+    dstMac              = 0.0.0.0.0.0
+
+    #
+    # Ingress interface Name
+    #
+    ingressIfName       = eth1
+
+    #
+    # Egress interface Name
+    #
+    egressIfName        = eth0
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType             = EMAC
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter        = 1
+}
+
+# Rule #3 Error checking for egress 
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    #
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Source MacAddress used to match rules in LUT 1-0
+    #
+    srcMac              = 0.0.0.0.0.0
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    #
+    dstMac              = 00.04.23.BD.95.0F
+
+    #
+    # Ingress interface Name
+    #
+    ingressIfName       = eth0
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType            = EMAC
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter        = 1
+}
+
+# Rule #5 Host rule for br0
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    #
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Source MacAddress used to match rules in LUT 1-0
+    #
+    srcMac              = 0.0.0.0.0.0
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    #
+    dstMac              = 02.18.31.7E.3E.6F
+
+    #
+    # Ingress interface Name
+    #
+
+    #
+    # Egress interface Name
+    #
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType            = HOST
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter        = 1
+}
+
+# Rule #6 Host rule for br0
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Source MacAddress used to match rules in LUT 1-0
+    #
+    srcMac              = 02.18.31.7E.3E.6F
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    #
+    dstMac              = 0.0.0.0.0.0
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType            = HOST
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter        = 1
+}
+
+# Rule #7 PDSP1 rule for continue parsing
+rule
+{
+    #
+    # LUT 1-0 rmRegion name, It should match with dts file. If not specified, it will default to "lut10_region0" 
+    #
+    rmRegionName        = lut10_region0
+
+    #
+    # Ethernet Type used for matching the rule in LUT 1-0 
+    #
+    ethType             = 0
+
+    #
+    # Vlan id
+    #
+    vlanId              = 0
+
+    #
+    # Flag to indicate vlanId field will not used to match the ethernet rule.
+    #
+    anyVlanId           = 1
+
+    #
+    # Source MacAddress used to match rules in LUT 1-0
+    #
+    srcMac              = 02.18.31.7E.3E.6F
+
+    #
+    # Destination Mac Address used to match rules in LUT 1-0
+    #
+    dstMac              = 0.0.0.0.0.0
+
+    #
+    # Ingress interface Name
+    #
+    ingressIfName       = eth0
+
+    #
+    # Destination Type is used to determine how to forward the packet
+    # Supported type: "EMAC", "PDSP1", "HOST"
+    #
+    dstType            = PDSP1
+
+    #
+    # Flag to enable user stats for the entry in bytes
+    #
+    byteCounter        = 1
+
+    #
+    # Flag to enable user stats for the entry in packet
+    #
+    packetCounter        = 1
+}
+
+
+

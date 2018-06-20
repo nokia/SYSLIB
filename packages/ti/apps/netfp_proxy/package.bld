@@ -1,0 +1,50 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains information on the packaging of the NETFP Proxy
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* List of all subdirectories that combine to make the package */
+var subDirectories = [ "src", "include", "test" ];
+
+/* Package name */
+var pkgName = Pkg.name.replace(/\./g, "_");
+
+/* Cycle through all the sub-directories and build all the files */
+for (var i = 0; i < subDirectories.length; i++)
+{
+    /* Load the capsule in the sub directory. */
+    var caps = xdc.loadCapsule (subDirectories[i]+"/Module.xs");
+
+    print ("Building directory " + subDirectories[i]);
+
+    /* Build the capsule. */
+    caps.modBuild();
+
+    /* Package the module.xs files for building via package */
+    Pkg.otherFiles[Pkg.otherFiles.length++] = subDirectories[i]+"/Module.xs";
+}
+
+/* Package the remaining files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_proxy.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_proxy_ipc.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_proxy_plugin.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "armTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "plugin.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+
+/* Package the daemon executable(s) for all the supported devices */
+for (var device=0; device < Device.length; device++)
+{
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "netfpproxy_" + Device[device] + ".out";
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "test/cmd_shell_app/cmd_shell_" + Device[device] + ".out";
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "test/netfp_proxy_plugin/netfpproxy_plugin_" + Device[device] + ".so";
+}

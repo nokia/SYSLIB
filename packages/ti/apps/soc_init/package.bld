@@ -1,0 +1,34 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains information on the packaging of the SYSLIB SOC
+ *  Initialization application.
+ *
+ * Copyright (C) 2015 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Package the SYS-RM Daemon: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/listlib.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/soc_init.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/k2h.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/k2k.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/k2l.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/listlib.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/osal.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/soc_init.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+
+/* Packaging files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+
+/* Package the daemon executable(s) and configuration files for all the supported devices */
+for (var device=0; device < Device.length; device++)
+{
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "soc_init_" + Device[device] + ".out";
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "soc_" + Device[device] + ".conf";
+}
+

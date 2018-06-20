@@ -1,0 +1,604 @@
+/dts-v1/;
+
+/ {
+    /* Device resource definitions based on current supported QMSS, CPPI, and 
+     * PA LLD resources */
+	
+    qmss {
+        /* QMSS in joint mode affects only -qm1 resource */
+        control-qm1 {
+            resource-range = <0 1>;
+        };
+        control-qm2 {
+            resource-range = <0 1>;
+        }; 
+        
+        /* QMSS in joint mode affects only -qm1 resource */
+        linkram-control-qm1 {
+            resource-range = <0 1>;
+        };
+        linkram-control-qm2 {
+            resource-range = <0 1>;
+        }; 
+
+        /* QMSS in joint mode affects only -qm1 resource */
+        linkram-int-qm1 {
+            /* hw allows max of 32K "internal" descriptors */
+            resource-range = <0x00000000 0x00008000>;
+        };
+        linkram-int-qm2 {
+            /* hw allows max of 32K "internal" descriptors */
+            resource-range = <0x00000000 0x00008000>;
+        };      
+        linkram-ext-qm1 {
+            /* hw allows max of 480K "external" descriptors */
+            resource-range = <0x00008000 0x00078000>;
+        };
+        linkram-ext-qm2 {
+            /* hw allows max of 480K "external" descriptors */
+            resource-range = <0x00008000 0x00078000>;
+        };      
+
+        /* QMSS in joint mode affects only -qm1 resource */
+        memory-regions-qm1 {
+            resource-range = <0 64>;
+        };
+        memory-regions-qm2 {
+            resource-range = <0 64>;
+        };  
+
+        /* Queues match device specification and/or csl_qm_queue.h regardless of split or joint mode */
+        LOW_PRIORITY_QUEUE-qm1 {
+            resource-range = <0 512>;
+        };
+        AIF_QUEUE-qm1 {
+            resource-range = <512 128>;
+        };
+        PASS_QUEUE-qm1 {
+            resource-range = <640 9>;
+        };
+        INTC_QUEUE-qm1 {
+            resource-range = <652 6>;
+        }; 
+        INTC_SET2_QUEUE-qm1 {
+            resource-range = <658 8>;
+        }; 
+        INTC_SET3_QUEUE-qm1 {
+            resource-range = <666 6>;
+        }; 
+        SRIO_QUEUE-qm1 {
+            resource-range = <672 16>;
+        }; 
+        FFTC_A_QUEUE-qm1 {
+            resource-range = <688 4>;
+        }; 
+        FFTC_B_QUEUE-qm1 {
+            resource-range = <692 4>;
+        }; 
+        HIGH_PRIORITY_QUEUE-qm1 {
+            resource-range = <704 32>;
+        };       
+        STARVATION_COUNTER_QUEUE-qm1 {
+            resource-range = <736 64>;
+        };  
+        INFRASTRUCTURE_QUEUE-qm1 {
+            resource-range = <800 32>;
+        }; 
+        TRAFFIC_SHAPING_QUEUE-qm1 {
+            resource-range = <832 32>;
+        };         
+        BCP_QUEUE-qm1 {
+            resource-range = <864 8>;
+        };         
+        FFTC_C_QUEUE-qm1 {
+            resource-range = <872 4>;
+        }; 
+        FFTC_D_QUEUE-qm1 {
+            resource-range = <876 4>;
+        }; 
+        FFTC_E_QUEUE-qm1 {
+            resource-range = <880 4>;
+        }; 
+        FFTC_F_QUEUE-qm1 {
+            resource-range = <884 4>;
+        }; 
+        GENERAL_PURPOSE_QUEUE-qm1 {
+            /* First 4 is reserved for QMSS barrier */
+            /* resource-range = <896 7296>; */
+            resource-range = <900 7292>;
+        };
+        LOW_PRIORITY_QUEUE-qm2 {
+            resource-range = <8192 512>;
+        };
+        INTC_SET4_QUEUE-qm2 {
+            resource-range = <8844 20>;
+        }; 
+        GIC400_QUEUE-qm2 {
+            resource-range = <8704 32>;
+        };    
+        EDMA_4_QUEUE-qm2 {
+            resource-range = <8736 8>;
+        };     
+        HLINK_BROADCAST_QUEUE-qm2 {
+            resource-range = <8744 8>;
+        }; 
+        XGE_QUEUE-qm2 {
+            resource-range = <8752 8>;
+        };         
+        HLINK_0_QUEUE-qm2 {
+            resource-range = <8796 16>;
+        };       
+        DXB_QUEUE-qm2 {
+            resource-range = <8836 8>;
+        };         
+        HLINK_1_QUEUE-qm2 {
+            resource-range = <8864 16>;
+        };
+        HIGH_PRIORITY_QUEUE-qm2 {
+            resource-range = <8896 32>;
+        };       
+        STARVATION_COUNTER_QUEUE-qm2 {
+            resource-range = <8928 64>;
+        };  
+        QM2_INFRASTRUCTURE_QUEUE-qm2 {
+            resource-range = <8992 32>;
+        }; 
+        GENERAL_PURPOSE_QUEUE-qm2 {
+            resource-range = <9024 7360>;
+        };   
+
+        firmware-pdsp {
+            resource-range = <0 8>;
+        };        
+        accumulator0-ch { /* accumulator using first INTD */
+            resource-range = <0 48>;          
+        };              
+        accumulator1-ch { /* accumulator using second INTD */
+            resource-range = <0 48>;          
+        };              
+    }; /* qmss */
+
+    cppi {
+        srio-hw-open {
+            resource-range = <0 1>;
+        };
+        srio-rx-ch {
+            resource-range = <0 16>;
+        };
+        srio-tx-ch {
+            resource-range = <0 16>;
+        };
+        srio-rx-flow-id {
+            resource-range = <0 20>;
+        };   
+
+        aif-hw-open {
+            resource-range = <0 1>;
+        };
+        aif-rx-ch {
+            resource-range = <0 129>;
+        };
+        aif-tx-ch {
+            resource-range = <0 129>;
+        };
+        aif-rx-flow-id {
+            resource-range = <0 129>;
+        };      
+
+        fftc-a-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-a-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-a-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-a-rx-flow-id {
+            resource-range = <0 8>;
+        };   
+
+        fftc-b-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-b-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-b-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-b-rx-flow-id {
+            resource-range = <0 8>;
+        };   
+
+        fftc-c-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-c-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-c-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-c-rx-flow-id {
+            resource-range = <0 8>;
+        };
+
+        fftc-d-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-d-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-d-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-d-rx-flow-id {
+            resource-range = <0 8>;
+        };   
+
+        fftc-e-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-e-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-e-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-e-rx-flow-id {
+            resource-range = <0 8>;
+        };
+
+        fftc-f-hw-open {
+            resource-range = <0 1>;
+        };
+        fftc-f-rx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-f-tx-ch {
+            resource-range = <0 4>;
+        };
+        fftc-f-rx-flow-id {
+            resource-range = <0 8>;
+        };         
+        
+        pass-hw-open {
+            resource-range = <0 1>;
+        };
+        pass-rx-ch {
+            resource-range = <0 24>;
+        };
+        pass-tx-ch {
+            resource-range = <0 9>;
+        };
+        pass-rx-flow-id {
+            resource-range = <0 32>;
+        };   
+
+        qmss-qm1-hw-open {
+            resource-range = <0 1>;
+        };
+        qmss-qm1-rx-ch {
+            resource-range = <0 32>;
+        };
+        qmss-qm1-tx-ch {
+            resource-range = <0 32>;
+        };
+        qmss-qm1-rx-flow-id {
+            resource-range = <0 64>;
+        };   
+
+        qmss-qm2-hw-open {
+            resource-range = <0 1>;
+        };
+        qmss-qm2-rx-ch {
+            resource-range = <0 32>;
+        };
+        qmss-qm2-tx-ch {
+            resource-range = <0 32>;
+        };
+        qmss-qm2-rx-flow-id {
+            resource-range = <0 64>;
+        };        
+
+        bcp-hw-open {
+            resource-range = <0 1>;
+        };
+        bcp-rx-ch {
+            resource-range = <0 8>;
+        };
+        bcp-tx-ch {
+            resource-range = <0 8>;
+        };
+        bcp-rx-flow-id {
+            resource-range = <0 64>;
+        };           
+
+        xge-hw-open {
+            resource-range = <0 1>;
+        };
+        xge-rx-ch {
+            resource-range = <0 16>;
+        };
+        xge-tx-ch {
+            resource-range = <0 8>;
+        };
+        xge-rx-flow-id {
+            resource-range = <0 32>;
+        };           
+    }; /* cppi */
+
+    pa {
+        pa-lut { 
+            resource-range = <0 5>;
+        };
+        pa-firmware {
+            resource-range = <0 1>;
+        };
+        pa-32bUsrStats {
+            resource-range = <0 256>;
+        };
+        pa-64bUsrStats {
+            resource-range = <0 128>;
+        };
+        pa-num64bUserStats {
+            resource-range = <128 1>;
+        };
+    }; /* pa */
+
+    srio {
+        srio-dio-sockets {
+            resource-range = <0 8>;
+        };
+        srio-type9-type11-sockets {
+            resource-range = <0 64>;
+        };
+        srio-type9-type11-mappings {
+            resource-range = <0 64>;
+        };
+        srio-lsus {
+            resource-range = <0 8>;
+        };
+        srio-init-hw {
+            resource-range = <0 1>;
+        };
+    };
+ 
+    syslib {
+        /*****************************************************************************
+         * Hardware semaphores: 
+         *  - There are 32 hardware semaphores in the SYSTEM.
+         *  - Reserved 0-11; the rest available for the applications.
+         *****************************************************************************/
+        hw-semaphores {
+            resource-range = <12 20>;
+        };
+
+        /*****************************************************************************
+         * Hardware timers: 
+         *  - There are 20 hardware timers in the SYSTEM.
+         *****************************************************************************/
+        timers {
+            resource-range = <0 20>;
+        };
+
+        /*****************************************************************************
+         * High Priority Accumulator channels: 
+         *  - Each DSP core can have at most 8 high priority accumulated channels
+         *  - The naming convention is as follows "hi_accumulator_channel_x" where x
+         *    is the DSP core number
+         *  - ARM is allocated 8 accumulated channels which implies that each DSP 
+         *    core now has only 7 accumulated channels.
+         *****************************************************************************/
+        hi_accumulator_channel_arm {
+            resource-range = <56 1>,
+                             <57 1>,
+                             <58 1>,
+                             <59 1>,
+                             <60 1>,
+                             <61 1>,
+                             <62 1>,
+                             <63 1>;
+        };
+        hi_accumulator_channel_0 {
+            resource-range = <0  1>,
+                             <8  1>,
+                             <16 1>,
+                             <24 1>,
+                             <32 1>,
+                             <40 1>,
+                             <48 1>;
+        };
+        hi_accumulator_channel_1 {
+            resource-range = <1  1>,
+                             <9  1>,
+                             <17 1>,
+                             <25 1>,
+                             <33 1>,
+                             <41 1>,
+                             <49 1>;
+        };
+        hi_accumulator_channel_2 {
+            resource-range = <2  1>,
+                             <10 1>,
+                             <18 1>,
+                             <26 1>,
+                             <34 1>,
+                             <42 1>,
+                             <50 1>;
+        };
+        hi_accumulator_channel_3 {
+            resource-range = <3  1>,
+                             <11 1>,
+                             <19 1>,
+                             <27 1>,
+                             <35 1>,
+                             <43 1>,
+                             <51 1>;
+        };
+        hi_accumulator_channel_4 {
+            resource-range = <4  1>,
+                             <12 1>,
+                             <20 1>,
+                             <28 1>,
+                             <36 1>,
+                             <44 1>,
+                             <52 1>;
+        };
+        hi_accumulator_channel_5 {
+            resource-range = <5  1>,
+                             <13 1>,
+                             <21 1>,
+                             <29 1>,
+                             <37 1>,
+                             <45 1>,
+                             <53 1>;
+        };
+        hi_accumulator_channel_6 {
+            resource-range = <6  1>,
+                             <14 1>,
+                             <22 1>,
+                             <30 1>,
+                             <38 1>,
+                             <46 1>,
+                             <54 1>;
+        };
+        hi_accumulator_channel_7 {
+            resource-range = <7  1>,
+                             <15 1>,
+                             <23 1>,
+                             <31 1>,
+                             <39 1>,
+                             <47 1>,
+                             <55 1>;
+        };
+
+        /*****************************************************************************
+         * System Interrupt Mappings: 
+         *  - These are applicable only for the DSP cores 
+         *  - System interrupts are mapped differently to each DSP core.
+         *****************************************************************************/
+        cic_output_0 {
+            resource-range = <8  8>,
+                             <64 10>;
+        };
+        cic_output_1 {
+            resource-range = <24 8>,
+                             <74 10>;
+        };
+        cic_output_2 {
+            resource-range = <40 8>,
+                             <84 10>;
+        };
+        cic_output_3 {
+            resource-range = <56 8>,
+                             <94 10>;
+        };
+        cic_output_4 {
+            resource-range = <8  8>,
+                             <64 10>;
+        };
+        cic_output_5 {
+            resource-range = <24 8>,
+                             <74 10>;
+        };
+        cic_output_6 {
+            resource-range = <40 8>,
+                             <84 10>;
+        };
+        cic_output_7 {
+            resource-range = <56 8>,
+                             <94 10>;
+        };
+
+        /*****************************************************************************
+         * Direct Interrupt Queues: 
+         * - There are 4 INTC SET. DSP has INTC SET1, 3 and 4. 
+         * - On ARM INTC SET2 and the GIC Queues are the only ones which are available
+         *****************************************************************************/
+        direct_interrupt_dsp {
+            resource-range = <652  6>,
+                             <666  6>,
+                             <8844 20>;
+        };
+        direct_interrupt_arm {
+            resource-range = <8704 32>,
+                             <658  8>;
+        };
+
+        /*****************************************************************************
+         * LUT entries for Layer 2
+         ****************************************************************************/
+        lut10_region0 {
+            resource-range = <44 8>;
+        };
+ 
+        /*****************************************************************************
+         * LUT entries for Layer 3
+         * - The following section defines how LUT1 entries will be used in fast path
+             createion.
+         * - There are 3 groups for both LUT1-1 and LUT1-2
+             1. Normal Fast Path
+             2. Wild Carding Fast Path
+             3. LUT Extension
+         *****************************************************************************/
+        lut11_fastpath_index {
+            resource-range = <0 60>;
+        };
+        lut11_wildcarding_index {
+            resource-range = <60 3>;
+        };
+        lut11_extentions {
+            resource-range = <63 1>;
+        };
+
+        lut12_fastpath_index {
+            resource-range = <0 60>;
+        };
+        lut12_wildcarding_index {
+            resource-range = <60 3>;
+        };
+        lut12_extentions {
+            resource-range = <63 1>;
+        };
+
+    }; /* syslib */
+
+    qmssBarrier {
+    /* Enable these for QMSS barrier Q functionality */
+    /*
+        msmc_barrier_Q {
+            resource-range = <896 1>;
+        };
+        msmc_barrier_Q_NetCP {
+            resource-range = <897 1>;
+        };
+        msmc_barrier_PDSPID {
+            resource-range = <0 1>;
+        };
+        ddr_barrier_Q {
+            resource-range = <898 1>;
+        };
+        ddr_barrier_Q_NetCP {
+            resource-range = <899 1>;
+        };
+        ddr_barrier_PDSPID {
+            resource-range = <0 1>;
+        };
+    */
+    }; /* qmssBarrier */
+    
+    phy {
+        /*****************************************************************************
+         * EDMA3 Instances are used between the front end and TCP3D 
+         *****************************************************************************/
+        edma3_frontend {
+            resource-range = <1 2>;
+        };
+        edma3_tcp3 {
+            resource-range = <3 2>;
+        };
+    };  /* phy */
+};
+

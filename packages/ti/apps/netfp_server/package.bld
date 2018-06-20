@@ -1,0 +1,34 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION: 
+ *  This file contains information on the packaging of the agent server
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Package the SYSLIB NETFP server daemon source files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/listlib.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/netfp_server.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/netfp_server.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/netfp_masterServerIf.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/listlib.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/osal.c";
+
+/* Packaging files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+
+/* Sample DAT Configuration files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_LTE9A.conf";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_LTE9B.conf";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_LTE10.conf";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_LTE10_D2.conf";
+
+/* Package the daemon executable(s) for all the supported devices */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_server_" + Device[device] + ".out";
+

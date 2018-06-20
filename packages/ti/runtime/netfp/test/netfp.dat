@@ -1,0 +1,30 @@
+# ############################################
+# This is the NETFP Configuration file
+# ############################################
+
+# MAC Address
+ENODEB_MAC_ADDRESS = C4.ED.BA.99.FF.01;
+
+# ENODEB IP address
+ENODEB_IP_ADDRESS    = 192.168.1.2;
+ENODEB_IP6_ADDRESS0  = 7000:0000:0000:0000:0000:0000:0000:0002;
+
+# Security Gateway IP address: This configuration is used only for the
+# IPv4 and IPv6 secure tests. The eNB will communicate to the SeGW via
+# the IPSEC Tunnels. This configuration is NOT used in the case of the
+# non-secure tests.
+SGW0_IP_ADDRESS      = 192.168.1.1;
+SGW0_MAC_ADDRESS     = 00.21.9b.6d.b3.f5;
+SGW0_IP6_ADDRESS     = 7000:0000:0000:0000:0000:0000:0000:0001;
+
+# PDN Gateway IP address: This is the configuration of the PC which is
+# used to generate the packets to the box.
+PDN_IP_ADDRESS      = 192.168.1.1;
+PDN_MAC_ADDRESS     = 00.21.9b.6d.b3.f5;
+PDN_IP6_ADDRESS     = 7000:0000:0000:0000:0000:0000:0000:0002;
+
+# PDN2 Configuration:
+#   - This is the IP address of the second RNC involved in wild carding test
+PDN2_IP_ADDRESS      = 158.218.100.246;
+PDN2_MAC_ADDRESS     = 08.00.27.2b.7c.a2;
+PDN2_IP6_ADDRESS     = 6000:0000:0000:0000:0000:0000:0000:0010;

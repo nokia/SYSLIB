@@ -1,0 +1,29 @@
+#Configuration script to setup test environment
+#!/bin/sh
+
+ifconfig eth1 0.0.0.0 up
+
+#Create a VLAN interface on eth1 for handling eNodeB CP/UP traffic
+vconfig add eth1 2
+
+#Setup a private IPv4 address for handling eNodeB CP/UP traffic
+ifconfig eth1.2 192.168.1.1 up
+
+#Setup a private IPv6 address 
+ip addr add 7000::1/64 dev eth1.2
+
+#Create a VLAN interface on eth1 for handling eNodeB MP traffic
+vconfig add eth1 3
+
+#Setup a private IPv4 address for handling eNodeB MP traffic
+ifconfig eth1.3 192.168.2.1 up
+
+#Setup IPSec related configuration files
+cp ./conf/common/caCert.der /etc/ipsec.d/cacerts/
+cp ./conf/common/secgw_1/alphaCert.der /etc/ipsec.d/certs/
+cp ./conf/common/secgw_1/alphaKey.der /etc/ipsec.d/private/
+cp ./conf/common/secgw_1/ipsec.secrets /etc/
+cp ./conf/syslib_duc_lte_trust_7/secgw_1/ipsec.conf /etc/
+
+#Start the Strongswan IKEv2 daemon
+ipsec restart

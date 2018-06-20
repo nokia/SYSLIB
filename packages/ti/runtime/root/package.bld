@@ -1,0 +1,50 @@
+/******************************************************************************
+ * FILE PURPOSE: Build description for the ROOT
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION: 
+ *  This file contains the build specification and description for the ROOT
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* List of all subdirectories that combine to make the Package. */
+var subDirectories = [ "src", "docs", "include" ];
+
+/* Package name */
+var pkgName = Pkg.name.replace(/\./g, "_");
+
+/* Cycle through all the sub-directories and build all the files */
+for (var i = 0; i < subDirectories.length; i++) 
+{
+    /* Load the capsule in the sub directory. */
+    var caps = xdc.loadCapsule (subDirectories[i]+"/Module.xs");
+
+    print ("Building directory " + subDirectories[i]);
+
+    /* Build the capsule. */
+    caps.modBuild();
+
+    /* Package the module.xs files for building via package */
+    Pkg.otherFiles[Pkg.otherFiles.length++] = subDirectories[i]+"/Module.xs";
+}
+
+/* Package the remaining files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "Settings.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "root.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "docs/Doxyfile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "rootlib.mak";
+
+/* Package the ROOT libraries */
+for (var device=0; device < Device.length; device++)
+{
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "lib/libroot_master_" + Device[device] + ".a";
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "lib/libroot_slave_" + Device[device] + ".a";
+}
+

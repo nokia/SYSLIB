@@ -1,0 +1,8 @@
+#!/bin/sh
+#Configuration script to setup test environment
+
+#Setup an IPv4 address on test interface eth0 for handling CP/UP traffic
+ifconfig eth0 192.168.1.10 up
+
+#Setup SecGW as the default Gw for this host
+route add default gw 192.168.1.1

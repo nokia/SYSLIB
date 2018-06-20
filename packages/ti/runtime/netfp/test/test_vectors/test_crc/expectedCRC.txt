@@ -1,0 +1,19 @@
+1: cc cc
+2: 19 b9
+3: NO CRC
+4: cc cc
+5: 1e 65
+6: 1e 65
+7: 76 91
+8: cc cc
+9: NO CRC
+10: cc cc
+11: 00 cc
+12: cf 18
+13: 4f 3f
+14: 4f 35
+15: 4f 21
+16: a6 f5
+17: NO CRC
+
+

@@ -1,0 +1,25 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains information on the packaging of the name proxy server
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Package the SYSLIB NAME Proxy files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/proxy.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/osal.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/name_proxy.h";
+
+/* Packaging files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+
+/* Package the daemon executable(s) for all the supported devices */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "name_proxy_" + Device[device] + ".out";
+

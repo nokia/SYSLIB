@@ -1,0 +1,51 @@
+/******************************************************************************
+ * FILE PURPOSE: Build description for the Packet Library
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains the build specification and description for the
+ *  Packet Library
+ *
+ * Copyright (C) 2015 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* List of all subdirectories that combine to make the PKTLIB Package. */
+var subDirectories = [ "src", "docs", "test" ];
+
+/* Package name */
+var pkgName = Pkg.name.replace(/\./g, "_");
+
+/* Cycle through all the sub-directories and build all the files */
+for (var i = 0; i < subDirectories.length; i++)
+{
+    /* Load the capsule in the sub directory. */
+    var caps = xdc.loadCapsule (subDirectories[i]+"/Module.xs");
+
+    print ("Building directory " + subDirectories[i]);
+
+    /* Build the capsule. */
+    caps.modBuild();
+
+    /* Package the module.xs files for building via package */
+    Pkg.otherFiles[Pkg.otherFiles.length++] = subDirectories[i]+"/Module.xs";
+}
+
+/* Package the remaining files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "Settings.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "pktlib.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "docs/Doxyfile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "pktlibver.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "pktlib.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "armTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dspTest.mak";
+
+/* Package the PKTLIB libraries */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "lib/libpktlib_" + Device[device] + ".a";
+

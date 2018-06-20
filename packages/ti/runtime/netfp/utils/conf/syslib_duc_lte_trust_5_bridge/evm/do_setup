@@ -1,0 +1,40 @@
+#!/bin/sh
+#Configuration script to setup test environment
+
+#Setup the bridge with eth0 and eth1
+ifconfig eth0 0.0.0.0 up
+ifconfig eth1 0.0.0.0 up
+brctl addbr br0
+brctl addif br0 eth0
+brctl addif br0 eth1
+
+#Setup a Public IPv4 address on br0
+ifconfig br0 10.10.10.2 up
+
+#Setup IPv4 default route
+ip route add default via 10.10.10.1 dev br0
+
+#Setup a private IPv4 address for Control Plane (CP) and User Plane (UP) traffic
+ifconfig br0:1 192.168.1.2 up
+
+#Setup a private IPv6 address for Control Plane (CP) and User Plane (UP) traffic
+ip addr add 7000::2/64 dev br0:1
+
+#Setup a private IPv4 address for Management Plane (MP) traffic
+ifconfig br0:2 192.168.2.2 up
+# Setup Routes if install_routes is disabled from strongswan
+ip route add 6000::1/64 via 7000::1
+route add 158.218.100.0 gw 10.10.10.1
+
+#Display the bridged interfaces
+brctl showmacs br0
+
+#Setup IPSec related configuration files
+cp ./conf/common/caCert.der /etc/ipsec.d/cacerts/
+cp ./conf/common/evm/betaCert.der /etc/ipsec.d/certs/
+cp ./conf/common/evm/betaKey.der /etc/ipsec.d/private/
+cp ./conf/common/evm/ipsec.secrets /etc/
+cp ./conf/syslib_duc_lte_trust_5_bridge/evm/ipsec.conf /etc/
+
+#Start the Strongswan IKEv2 daemon
+ipsec start

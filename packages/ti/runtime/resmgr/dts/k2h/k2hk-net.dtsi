@@ -1,0 +1,421 @@
+/*
+ * Copyright 2014 Texas Instruments, Inc.
+ *
+ * Keystone Hawking/Kepler SoC specific network driver device bindings
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+netcp {
+	reg = <0x2090000 0xf00
+		0x2620110 0x8>;
+	compatible = "ti,keystone-netcp";
+
+	clocks = <&paclk13>, <&clkcpgmac>, <&chipclk12>;
+	clock-names = "clk_pa", "clk_cpgmac", "cpsw_cpts_rft_clk";
+	dma-coherent;
+	streaming-regs = <0x02000604 0x4>;
+
+	interfaces {
+		interface0: interface-0 {
+			rx-channel = "netrx0";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <1>;
+			/* local-mac-address = [02 18 31 7e 3e 6e]; */
+		};
+		interface1: interface-1 {
+			rx-channel = "netrx1";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 6f];*/
+		};
+		interface2: interface-2 {
+			rx-channel = "netrx2";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 7e]; */
+		};
+		interface3: interface-3 {
+			rx-channel = "netrx3";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 7f]; */
+		};
+	};
+
+	cpsw: cpsw@2090000 {
+		label = "keystone-cpsw";
+
+		intf_tx_queues = <7>;
+
+		sgmii_module_ofs  = <0x100>;
+		sgmii_module34_ofs  = <0x400>;
+		switch_module_ofs = <0x800>;
+		host_port_reg_ofs = <0x834>;
+		slave_reg_ofs	  = <0x860>;
+		sliver_reg_ofs	  = <0x900>;
+		slave23_reg_ofs	  = <0xa00>;
+		hw_stats_reg_ofs  = <0xb00>;
+		cpts_reg_ofs	  = <0xd00>;
+		ale_reg_ofs	  = <0xe00>;
+
+		num_slaves  = <4>;
+		ale_ageout  = <30>;
+		ale_entries = <1024>;
+		ale_ports   = <5>;
+
+		cpts_rftclk_sel = <0>;
+		/*cpts_rftclk_freq = <399360000>;*/
+		cpts_ts_comp_length = <3>;
+		cpts_ts_comp_polarity = <1>;  /* 1 - assert high */
+		/* cpts_clock_mult = <5000>; */
+		/* cpts_clock_shift = <10>; */
+		/* cpts_clock_div = <3>; */
+		/* force_no_hwtstamp; */
+
+		multi-interface;
+		num-interfaces = <4>;
+		slaves-per-interface = <1>;
+
+		interfaces {
+			interface-0 {
+				slave_port = <0>;
+				tx-channel = "nettx0";
+				tx_queue_depth = <32>;
+			};
+			interface-1 {
+				slave_port = <1>;
+				tx-channel = "nettx1";
+				tx_queue_depth = <32>;
+			};
+			interface-2 {
+				slave_port = <2>;
+				tx-channel = "nettx2";
+				tx_queue_depth = <32>;
+			};
+			interface-3 {
+				slave_port = <3>;
+				tx-channel = "nettx3";
+				tx_queue_depth = <32>;
+			};
+		};
+
+		slaves {
+			slave0 {
+				label		= "slave0";
+				link-interface	= <4>;
+			};
+			slave1 {
+				label		= "slave1";
+				link-interface	= <4>;
+			};
+			slave2 {
+				label		= "slave2";
+				link-interface	= <2>;
+			};
+			slave3 {
+				label		= "slave3";
+				link-interface	= <2>;
+			};
+		};
+
+		serdeses {
+			serdes-at-probe	   = <1>;
+
+			serdes0 {
+				regs		   = <0x0232a000 0x2000>;
+				refclk-khz	   = <156250>;
+				link-rate-kbps	   = <1250000>;
+				phy-type	   = "sgmii";
+				max-lanes	   = <4>;
+				/*rx-force-enable;*/
+				/*debug;*/
+				lane0 {
+					/*disable;*/
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+				lane1 {
+					/*disable;*/
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+			};
+		};
+	};
+
+	pa: pa@2000000 {
+		label = "keystone-pa";
+		checksum-offload	= <0>; /* 1 - HW offload */
+		txhook-order		= <10>;
+		txhook-softcsum		= <40>;
+		rxhook-order		= <10>;
+
+		tx_cmd_queue_depth	= <64>;
+		tx_data_queue_depth	= <1024>;
+		rx_pool_depth		= <64>;
+		rx_buffer_size		= <128>;
+		lut-ranges		= <0 43 56 63>;
+		/* Static reservation in LUT-1 (outer IP)
+		 * used by driver to add IP rules for Rx checksum offload.
+		 */
+		ip-lut-ranges		= <61 63>;
+		rx-route		= <8704 22>; /* base queue, base flow */
+		/* mark_mcast_match	= <0x12345a00 0xffffff00>; */
+		/* force_no_hwtstamp; */
+		firmware		= 
+				"keystone/pa_pdsp0_classify1.fw",	/* 0 */
+				"keystone/pa_pdsp1_classify1.fw",	/* 1 */
+				"keystone/pa_pdsp2_classify1.fw",	/* 2 */
+				"keystone/pa_pdsp3_classify2.fw",	/* 3 */
+				"keystone/pa_pdsp45_pam.fw",		/* 4 */
+				"keystone/pa_pdsp45_pam.fw";		/* 5 */
+	};
+
+	sa: sa@20c0000 {
+		label = "keystone-sa";
+		multi-interface;
+		interface-0;
+		interface-1;
+		/* Optional: Specify NATT port for fragmentation detection */
+		natt-port = <0>;
+		tx_queue_depth = <1024>;
+	};
+
+	qos: qos@0 {
+		label = "keystone-qos";
+		multi-interface;
+
+		interface-0 {
+			chan-0 {
+				tx-channel = "qos-bypass-0";
+				tx_queue_depth = <1024>;
+			};
+			chan-1 {
+				tx-channel = "qos0";
+				tx_queue_depth = <64>;
+			};
+			chan-2 {
+				tx-channel = "qos1";
+				tx_queue_depth = <64>;
+			};
+			chan-3 {
+				tx-channel = "qos2";
+				tx_queue_depth = <64>;
+			};
+			chan-4 {
+				tx-channel = "qos3";
+				tx_queue_depth = <64>;
+			};
+			chan-5 {
+				tx-channel = "qos4";
+				tx_queue_depth = <64>;
+			};
+			chan-6 {
+				tx-channel = "qos5";
+				tx_queue_depth = <64>;
+			};
+		};
+		interface-1 {
+			chan-0 {
+				tx-channel = "qos-bypass-1";
+				tx_queue_depth = <1024>;
+			};
+			chan-1 {
+				tx-channel = "qos6";
+				tx_queue_depth = <64>;
+			};
+			chan-2 {
+				tx-channel = "qos7";
+				tx_queue_depth = <64>;
+			};
+			chan-3 {
+				tx-channel = "qos8";
+				tx_queue_depth = <64>;
+			};
+			chan-4 {
+				tx-channel = "qos9";
+				tx_queue_depth = <64>;
+			};
+			chan-5 {
+				tx-channel = "qos10";
+				tx_queue_depth = <64>;
+			};
+			chan-6 {
+				tx-channel = "qos11";
+				tx_queue_depth = <64>;
+			};
+		};
+	};
+};
+
+mdiox0: mdiox {
+	compatible = "virtual,mdio-gpio";
+	#address-cells = <1>;
+	#size-cells = <0>;
+	status = "disabled";
+	gpios = <&gpio0 2 0x2		/* mdc */
+		 &gpio0 0 0x2>;		/* mdio */
+
+	phyx0: phyx@0 {
+		compatible = "Marvell,88x2242", "ethernet-phy-ieee802.3-c45";
+		reg = <0>;
+	};
+	phyx1: phyx@1 {
+		compatible = "Marvell,88x2242", "ethernet-phy-ieee802.3-c45";
+		reg = <1>;
+	};
+};
+
+netcpx: netcp@2f00000 {
+	#address-cells = <1>;
+	#size-cells = <1>;
+	reg = <0x2f00000 0xa0600>;
+	compatible = "ti,keystone-netcp";
+	dma-coherent;
+	status = "disabled";
+
+	clocks = <&clkxge>;
+	clock-names = "clk_xge";
+
+	interfaces {
+		interface-0 {
+			rx-channel = "xgerx0";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1500 4096 0 0>;
+			/*local-mac-address = [02 18 31 7e 3e 5e];*/
+		};
+		interface-1 {
+			rx-channel = "xgerx1";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1500 4096 0 0>;
+			/*local-mac-address = [02 18 31 7e 3e 5f];*/
+		};
+	};
+
+	cpswx: cpswx@2f00000 {
+		reg = <0x2f00000 0xa0600>;
+		label = "keystone-cpswx";
+
+		intf_tx_queues = <1>;
+
+		sgmii_module_ofs  = <0x100>;
+		pcsr_module_ofs   = <0x600>;
+		switch_module_ofs = <0x1000>;
+		host_port_reg_ofs = <0x1034>;
+		slave_reg_ofs	  = <0x1064>;
+		sliver_reg_ofs	  = <0x1400>;
+		hw_stats_reg_ofs  = <0x1800>;
+		ale_reg_ofs	  = <0x1700>;
+
+		host_port  = <0>;
+		num_slaves  = <2>;
+		ale_ageout  = <30>;
+		ale_entries = <1024>;
+		ale_ports   = <3>;
+
+		multi-interface;
+		num-interfaces = <2>;
+		slaves-per-interface = <1>;
+
+		interfaces {
+			interface-0 {
+				slave_port = <0>;
+				tx-channel = "xgetx0";
+				tx_queue_depth = <128>;
+			};
+			interface-1 {
+				slave_port = <1>;
+				tx-channel = "xgetx1";
+				tx_queue_depth = <128>;
+			};
+		};
+
+		slaves {
+			slave0 {
+				label		= "slave0";
+				link-interface	= <10>;	/* XGMII_LINK_MAC_PHY */
+				phy-handle	= <&phyx0>;
+			};
+			slave1 {
+				label		= "slave1";
+				link-interface	= <10>;	/* SGMII_LINK_MAC_PHY */
+				phy-handle	= <&phyx1>;
+			};
+		};
+
+		serdeses {
+			serdes-at-probe	   = <1>;
+			serdes0 {
+				regs		   = <0x0231e000 0x2000>;
+				refclk-khz	   = <156250>;
+				link-rate-kbps	   = <10312500>;
+				phy-type	   = "xge";
+				max-lanes	   = <2>;
+				/*debug;*/
+
+				/*rx-force-enable;*/
+				lane0 {
+					/*disable;*/
+					/*loopback;*/
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <2 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+					control-rate	= <0>; /* full */
+				};
+				lane1 {
+					/*disable;*/
+					/*loopback;*/
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <2 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+					control-rate	= <0>; /* full */
+				};
+
+				firmware {
+					status = "disabled";
+					lane0 {
+						status = "disabled";
+						lane = <0>;
+						rate = <0>; /* 0 = default
+							       1 = 1g
+							       2 = 10g */
+						autonegotiate;
+						/*tx_pause;*/
+						/*rx_pause;*/
+						10g_train;
+						/*fec;*/
+					};
+					lane1 {
+						status = "disabled";
+						lane = <1>;
+						rate = <0>; /* 0 = default
+							       1 = 1g
+							       2 = 10g */
+						autonegotiate;
+						/*tx_pause;*/
+						/*rx_pause;*/
+						10g_train;
+						/*fec;*/
+					};
+				};
+			};
+		};
+	};
+};

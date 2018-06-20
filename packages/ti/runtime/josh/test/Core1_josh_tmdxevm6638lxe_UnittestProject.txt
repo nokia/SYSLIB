@@ -1,0 +1,12 @@
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/test/main_core1.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/src/josh.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/src/listlib.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/test/test_osal.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/test/core1.cfg"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/josh/test/core1_linker.cmd" 
+-ccs.linkFile "CPPIDEV_INSTALL_PATH/src/cppi_device.c"
+-ccs.linkFile "QMSSDEV_INSTALL_PATH/src/qmss_device.c"
+-ccs.setCompilerOptions "-DBUILDENV -DDEVICE_K2 -mv6600 -g --diag_warning=225 -I${SYSLIB_INSTALL_PATH}/ti/runtime/josh -I${SYSLIB_INSTALL_PATH}/ti/runtime/netfp -I${PDK_INSTALL_PATH}/ti/drv/cppi -I${PDK_INSTALL_PATH}/ti/drv/qmss" -rtsc.enableRtsc 
+-ccs.setLinkerOptions "--ram_model --define=DBUILDENV"
+-ccs.setCompilerOptions "-D${DEVICE_DEFINE}"
+

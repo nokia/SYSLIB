@@ -1,0 +1,43 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION: 
+ *  This file contains information on the packaging of the agent server
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Package the NETFP master daemon source files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/listlib.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/netfp_master_internal.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "armTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_master.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/listlib.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/master.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/mgmt.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/osal.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/qos.c";
+
+/* Package the NETFP master daemon test files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "test/test.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "test/osal.c";
+
+/* Packaging files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+
+/* Sample DAT Configuration files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp.conf";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_k2l.conf";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "test/netfp_ethrule.dat"
+
+/* Package the daemon executable and test application for all the supported devices */
+for (var device=0; device < Device.length; device++)
+{
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "netfp_master_" + Device[device] + ".out";
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "test/test_netfp_master_" + Device[device] + ".out";
+}
+

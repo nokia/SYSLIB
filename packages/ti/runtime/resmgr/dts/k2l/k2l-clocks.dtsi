@@ -1,0 +1,264 @@
+/*
+ * Copyright 2014 Texas Instruments, Inc.
+ *
+ * Keystone Lamarr SoC specific clock driver device bindings
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+clocks {
+	mainpllclk: mainpllclk@2310110 {
+		#clock-cells = <0>;
+		compatible = "keystone,main-pll-clk";
+		clocks = <&refclkmain>;
+		reg = <0x02310110 4	/* PLLCTRL PLLM */
+			0x02620350 4>;	/* MAINPLL_CTL0 */
+		pll_has_pllctrl;
+		pllm_lower_mask	= <0x3f>;
+		pllm_upper_mask = <0x7f000>;
+		pllm_upper_shift = <6>;
+		plld_mask = <0x3f>;
+		fixed_postdiv = <2>;
+	};
+
+	armpllclk: armpllclk@2620370 {
+		#clock-cells = <0>;
+		compatible = "keystone,pll-clk";
+		clocks = <&refclkarm>;
+		clock-output-names = "arm-pll-clk";
+		reg = <0x02620370 4>;
+		pllm_upper_mask = <0x7ffc0>;
+		pllm_upper_shift = <6>;
+		plld_mask = <0x3f>;
+	};
+
+	papllclk: papllclk@2620358 {
+		#clock-cells = <0>;
+		compatible = "keystone,pll-clk";
+		clocks = <&refclkmain>;
+		reg = <0x02620358 4>;	/* PASSPLLCTL0 */
+		pllm_upper_mask = <0x7ffc0>;
+		pllm_upper_shift = <6>;
+		plld_mask = <0x3f>;
+	};
+
+	ddr3_clk: ddr3_clk@2620360 {
+		#clock-cells = <0>;
+		compatible = "keystone,pll-clk";
+		clocks = <&refclkddr3>;
+		clock-output-names = "ddr3-pll-clk";
+		reg = <0x02620360 4>;
+		pllm_upper_mask = <0x7ffc0>;
+		pllm_upper_shift = <6>;
+		plld_mask = <0x3f>;
+	};
+
+	clkdfe: clkdfe {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk12>;
+		clock-output-names = "dfe";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <1>;
+	};
+
+	clkusb: clkusb {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "usb";
+		reg = <0x02350000 4096>;
+		lpsc = <2>;
+	};
+
+	clkpcie1: clkpcie1 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk12>;
+		clock-output-names = "pcie1";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <11>;
+		pd = <4>;
+	};
+
+	clkgem1: clkgem1 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk1>;
+		clock-output-names = "gem1";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <16>;
+		pd = <9>;
+	};
+
+	clkgem2: clkgem2 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk1>;
+		clock-output-names = "gem2";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <17>;
+		pd = <10>;
+	};
+
+	clkgem3: clkgem3 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk1>;
+		clock-output-names = "gem3";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <18>;
+		pd = <11>;
+	};
+
+	clktac: clktac {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "tac";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <25>;
+		pd = <17>;
+	};
+
+	clkrac01: clktac01 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "rac-01";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <26>;
+		pd = <17>;
+	};
+
+	clkfftc0: clkfftc0 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "fftc-0";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <28>;
+		pd = <19>;
+	};
+
+	clkfftc1: clkfftc1 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "fftc-1";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <49>;
+		pd = <28>;
+	};
+
+	clkosr: clkosr {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "osr";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <34>;
+		pd = <21>;
+	};
+
+	clktcp3d0: clktcp3d0 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "tcp3d-0";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <35>;
+		pd = <22>;
+	};
+
+	clktcp3d1: clktcp3d1 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "tcp3d-1";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <37>;
+		pd = <23>;
+	};
+
+	clkvcp0: clkvcp0 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "vcp-0";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <39>;
+		pd = <24>;
+	};
+
+	clkvcp1: clkvcp1 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "vcp-1";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <40>;
+		pd = <24>;
+	};
+
+	clkvcp2: clkvcp2 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "vcp-2";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <41>;
+		pd = <24>;
+	};
+
+	clkvcp3: clkvcp3 {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "vcp-3";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <42>;
+		pd = <24>;
+	};
+
+	clkbcp: clkbcp {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "bcp";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <47>;
+		pd = <26>;
+	};
+
+	clkiqn: clkiqn {
+		#clock-cells = <0>;
+		compatible = "davinci,psc-clk";
+		clocks = <&chipclk13>;
+		clock-output-names = "iqn";
+		base-flags = "ignore-unused";
+		reg = <0x02350000 4096>;
+		lpsc = <50>;
+		pd = <29>;
+	};
+};
+

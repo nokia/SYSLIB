@@ -1,0 +1,48 @@
+/******************************************************************************
+ * FILE PURPOSE: Build configuration Script for syslib
+ ******************************************************************************
+ * FILE NAME: config.bld
+ *
+ * DESCRIPTION:
+ *  This file contains the build configuration script syslib bundle.
+ *
+ * Copyright (C) 2012 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Set package attribute as ZIP or TAR */
+Pkg.attrs.archiver = "zip";
+
+/* Get Build environment */
+var build = xdc.useModule('xdc.bld.BuildEnvironment');
+
+/* Get the Tools Base directory from the Environment Variable */
+var toolsBaseDir = java.lang.System.getenv("XDCCGROOT");
+
+/* Get the SYSLIB Release Version Information from package compatibility key */
+/* 3 steps: remove SPACE and TAB, convert to string and split to make array */
+var syslibReleaseVersion = (""+Pkg.version.replace(/\s/g, "")).split(',');
+
+/* Add patch tag. Set the variable with a desired value like "-patch", "-eng" */
+var patchTag=""
+syslibReleaseVersion[syslibReleaseVersion.length-1] = syslibReleaseVersion[syslibReleaseVersion.length-1]+patchTag;
+
+/* C66 ELF compiler configuration for Little Endian Mode. */
+var C66LE           = xdc.useModule('ti.targets.elf.C66');
+C66LE.rootDir       = toolsBaseDir;
+C66LE.ccOpts.prefix = "-mo -o3 -g -q -k -eo.o";
+
+/* List all the build targets here. */
+Build.targets = [ C66LE ];
+
+
+var only_one_device = java.lang.System.getenv("SYSLIB_ONLY_DEVICE");
+/* HS device */
+if( only_one_device ) {
+    print("==============================================");
+    print("Just One Device: "+only_one_device);
+    print("==============================================");
+    Device = [only_one_device];
+} else {
+    /* List of all the devices which are supported */
+    Device = ["k2k", "k2h", "k2l"];
+}

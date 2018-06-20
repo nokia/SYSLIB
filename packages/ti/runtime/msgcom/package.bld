@@ -1,0 +1,54 @@
+/******************************************************************************
+ * FILE PURPOSE: Build description for the Message Communicator
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION:
+ *  This file contains the build specification and description for the
+ *  Packet Library
+ *
+ * Copyright (C) 2011 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* List of all subdirectories that combine to make the Message Communication Package. */
+var subDirectories = [ "src", "docs", "test", "include" ];
+
+/* Package name */
+var pkgName = Pkg.name.replace(/\./g, "_");
+
+/* Cycle through all the sub-directories and build all the files */
+for (var i = 0; i < subDirectories.length; i++)
+{
+    /* Load the capsule in the sub directory. */
+    var caps = xdc.loadCapsule (subDirectories[i]+"/Module.xs");
+
+    print ("Building directory " + subDirectories[i]);
+
+    /* Build the capsule. */
+    caps.modBuild();
+
+    /* Package the module.xs files for building via package */
+    Pkg.otherFiles[Pkg.otherFiles.length++] = subDirectories[i]+"/Module.xs";
+}
+
+/* Package the remaining files */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "Settings.xdc";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "msgcom.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "msgcom_osal.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "msgcom_cppi.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "docs/Doxyfile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "build/buildlib.xs";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "msgcomlib.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dspArmTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "armTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "dspTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "stressTest.mak";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "virtualTest.mak";
+
+/* Package the MSGCOM libraries */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "lib/libmsgcom_" + Device[device] + ".a";

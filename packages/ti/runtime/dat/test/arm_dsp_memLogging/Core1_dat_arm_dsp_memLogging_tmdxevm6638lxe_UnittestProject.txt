@@ -1,0 +1,15 @@
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/test/arm_dsp_memLogging/test_core1.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/test/arm_dsp_memLogging/core1.cfg"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/test/main_core1.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/test/core1_osal.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/test/core1_linker.cmd" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/src/dat_client.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/src/dat_listlib.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/src/dat_srv.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/runtime/dat/src/dat_log.c"
+-ccs.linkFile "CPPIDEV_INSTALL_PATH/src/cppi_device.c"
+-ccs.linkFile "QMSSDEV_INSTALL_PATH/src/qmss_device.c"
+-ccs.setCompilerOptions "-DBUILDENV -DDEVICE_K2 -mv6600 -g --diag_warning=225 -I${SYSLIB_INSTALL_PATH}/ti/runtime/netfp -I${PDK_INSTALL_PATH}/ti/drv/cppi -I${PDK_INSTALL_PATH}/ti/drv/qmss" -rtsc.enableRtsc 
+-ccs.setLinkerOptions "--ram_model --define=DBUILDENV"
+-ccs.setCompilerOptions "-D${DEVICE_DEFINE}"
+

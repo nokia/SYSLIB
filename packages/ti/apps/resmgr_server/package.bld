@@ -1,0 +1,28 @@
+/******************************************************************************
+ * FILE PURPOSE: Packaging file
+ ******************************************************************************
+ * FILE NAME: package.bld
+ *
+ * DESCRIPTION: 
+ *  This file contains information on the packaging of the agent server
+ *
+ * Copyright (C) 2013-2014 Texas Instruments, Inc.
+ *****************************************************************************/
+
+/* Package the SYS-RM Daemon: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/listlib.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "include/resmgr_server.h";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "makefile";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/resmgr_server.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/listlib.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/osal.c";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "src/resmgr_system.c";
+
+/* Packaging files: */
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.bld";
+Pkg.otherFiles[Pkg.otherFiles.length++] = "package.xdc";
+
+/* Package the daemon executable(s) for all the supported devices */
+for (var device=0; device < Device.length; device++)
+    Pkg.otherFiles[Pkg.otherFiles.length++] = "resmgr_server_" + Device[device] + ".out";
+

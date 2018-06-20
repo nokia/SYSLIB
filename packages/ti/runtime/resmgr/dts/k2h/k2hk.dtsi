@@ -1,0 +1,1163 @@
+/*
+ * Copyright 2014 Texas Instruments, Inc.
+ *
+ * Keystone Hawking/Kepler SoC specific device tree bindings
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+/ {
+	cpus {
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		interrupt-parent = <&gic>;
+
+		cpu@0 {
+			compatible = "arm,cortex-a15";
+			device_type = "cpu";
+			reg = <0x0>;
+			clocks = <&armpllclk>;
+		};
+
+		cpu@1 {
+			compatible = "arm,cortex-a15";
+			device_type = "cpu";
+			reg = <0x1>;
+			clocks = <&armpllclk>;
+		};
+
+		cpu@2 {
+			compatible = "arm,cortex-a15";
+			device_type = "cpu";
+			reg = <0x2>;
+			clocks = <&armpllclk>;
+		};
+
+		cpu@3 {
+			compatible = "arm,cortex-a15";
+			device_type = "cpu";
+			reg = <0x3>;
+			clocks = <&armpllclk>;
+		};
+	};
+
+	soc {
+		/include/ "k2hk-clocks.dtsi"
+
+		ipcgpio1: gpio@2620244 {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x02620244 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio2: gpio@2620248 {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x02620248 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio3: gpio@262024c {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x0262024c 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio4: gpio@2620250 {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x02620250 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio5: gpio@2620254 {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x02620254 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio6: gpio@2620258 {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x02620258 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		ipcgpio7: gpio@262025C {
+			compatible = "ti,keystone-ipc-gpio";
+			reg = <0x0262025C 4>;
+			gpio-controller;
+			#gpio-cells = <2>;
+		};
+
+		dsp0: dsp0 {
+			compatible = "linux,rproc-user";
+			mem = <0x10e00000 0x00008000
+			       0x10f00000 0x00008000
+			       0x10800000 0x00100000>;
+			reg = <0x02620040 4
+			       0x0235083c 4
+			       0x02350a3c 4
+			       0x02620240 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl",
+				"ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <8 0 0 0>;
+			kick-gpio = <&ipcgpio0 27 0>;
+			clocks = <&clkgem0>;
+			label = "dsp0";
+		};
+
+		dsp1: dsp1 {
+			compatible = "linux,rproc-user";
+			mem = <0x11e00000 0x00008000
+			       0x11f00000 0x00008000
+			       0x11800000 0x00100000>;
+			reg = <0x02620044 4
+			       0x02350840 4
+			       0x02350a40 4
+			       0x02620244 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <9 0 1 0>;
+			kick-gpio = <&ipcgpio1 27 0>;
+			clocks = <&clkgem1>;
+			label = "dsp1";
+		};
+
+		dsp2: dsp2 {
+			compatible = "linux,rproc-user";
+			mem = <0x12e00000 0x00008000
+			       0x12f00000 0x00008000
+			       0x12800000 0x00100000>;
+			reg = <0x02620048 4
+			       0x02350844 4
+			       0x02350a44 4
+			       0x02620248 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <10 0 2 0>;
+			kick-gpio = <&ipcgpio2 27 0>;
+			clocks = <&clkgem2>;
+			label = "dsp2";
+		};
+
+		dsp3: dsp3 {
+			compatible = "linux,rproc-user";
+			mem = <0x13e00000 0x00008000
+			       0x13f00000 0x00008000
+			       0x13800000 0x00100000>;
+			reg = <0x0262004c 4
+			       0x02350848 4
+			       0x02350a48 4
+			       0x0262024c 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <11 0 3 0>;
+			kick-gpio = <&ipcgpio3 27 0>;
+			clocks = <&clkgem3>;
+			label = "dsp3";
+		};
+
+		dsp4: dsp4 {
+			compatible = "linux,rproc-user";
+			mem = <0x14e00000 0x00008000
+			       0x14f00000 0x00008000
+			       0x14800000 0x00100000>;
+			reg = <0x02620050 4
+			       0x0235084C 4
+			       0x02350a4C 4
+			       0x02620250 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <12 0 4 0>;
+			kick-gpio = <&ipcgpio4 27 0>;
+			clocks = <&clkgem4>;
+			label = "dsp4";
+		};
+
+		dsp5: dsp5 {
+			compatible = "linux,rproc-user";
+			mem = <0x15e00000 0x00008000
+			       0x15f00000 0x00008000
+			       0x15800000 0x00100000>;
+			reg = <0x02620054 4
+			       0x02350850 4
+			       0x02350a50 4
+			       0x02620254 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <13 0 5 0>;
+			kick-gpio = <&ipcgpio5 27 0>;
+			clocks = <&clkgem5>;
+			label = "dsp5";
+		};
+
+		dsp6: dsp6 {
+			compatible = "linux,rproc-user";
+			mem = <0x16e00000 0x00008000
+			       0x16f00000 0x00008000
+			       0x16800000 0x00100000>;
+			reg = <0x02620058 4
+			       0x02350854 4
+			       0x02350a54 4
+			       0x02620258 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <14 0 6 0>;
+			kick-gpio = <&ipcgpio6 27 0>;
+			clocks = <&clkgem6>;
+			label = "dsp6";
+		};
+
+		dsp7: dsp7 {
+			compatible = "linux,rproc-user";
+			mem = <0x17e00000 0x00008000
+			       0x17f00000 0x00008000
+			       0x17800000 0x00100000>;
+			reg = <0x0262005C 4
+			       0x02350858 4
+			       0x02350a58 4
+			       0x0262025C 4>;
+			reg-names = "boot-address", "psc-mdstat", "psc-mdctl", "ipcgr";
+			interrupt-parent = <&ipcirq0>;
+			interrupts = <15 0 7 0>;
+			kick-gpio = <&ipcgpio7 27 0>;
+			clocks = <&clkgem7>;
+			label = "dsp7";
+		};
+
+		dspmem: dspmem {
+			compatible = "linux,rproc-user";
+			mem  = <0x0c000000 0x000600000
+					0xa0000000 0x20000000>;
+			label = "dspmem";
+		};
+
+		hwqueue0: hwqueue@2a40000 {
+			range		= <0 0x4000>;
+			linkram0	= <0x100000 0x8000>;
+			linkram1	= <0x0 0x10000>;
+
+			qmgrs {
+				qmgr1 {
+					managed-queues = <0x2000 0x2000>;
+					reg = <0x2a60000 0x20000 /* 0 - peek */
+					       0x2a06400 0x400 /* 1 - status */
+					       0x2a04000 0x1000 /* 2 - config */
+					       0x2a05000 0x1000 /* 3 - region */
+					       0x2aa0000 0x20000 /* 4 - push */
+					       0x2aa0000 0x20000>; /* 5 - pop */
+				};
+			};
+			queues {
+            /****************************************************************************************
+             * SYSLIB Modifications: We are limiting the number of queue pend queues which are 
+             * available to the kernel. By default the kernel was using all the 32 hardware queues; 
+             * however after analyzing the usage it was determined that the last queue number in use
+             * was 8721. Queue 8722 to 8735 were now freed up for usage by other applications.
+             ****************************************************************************************/
+/*
+				qpend-arm-hi {
+					values = <8704 32>;
+					interrupts = <0 48 0x104>,
+						<0 49 0x204>,
+						<0 50 0x404>,
+						<0 51 0x804>,
+						<0 52 0x204>,
+						<0 53 0xf04>,
+						<0 54 0xf04>,
+						<0 55 0xf04>,
+						<0 56 0xf04>,
+						<0 57 0xf04>,
+						<0 58 0xf04>,
+						<0 59 0xf04>,
+						<0 60 0x104>,
+						<0 61 0x204>,
+						<0 62 0x104>,
+						<0 63 0xf04>,
+						<0 64 0x404>,
+						<0 65 0x804>,
+						<0 66 0xf04>,
+						<0 67 0xf04>,
+						<0 68 0xf04>,
+						<0 69 0xf04>,
+						<0 70 0xf04>,
+						<0 71 0xf04>,
+						<0 72 0xf04>,
+						<0 73 0xf04>,
+						<0 74 0xf04>,
+						<0 75 0xf04>,
+						<0 76 0xf04>,
+						<0 77 0xf04>,
+						<0 78 0xf04>,
+						<0 79 0xf04>;
+					reserved;
+				};
+*/
+				qpend-arm-hi {
+					values = <8704 18>;
+					interrupts = <0 48 0x104>,
+						<0 49 0x204>,
+						<0 50 0x404>,
+						<0 51 0x804>,
+						<0 52 0x204>,
+						<0 53 0xf04>,
+						<0 54 0xf04>,
+						<0 55 0xf04>,
+						<0 56 0xf04>,
+						<0 57 0xf04>,
+						<0 58 0xf04>,
+						<0 59 0xf04>,
+						<0 60 0x104>,
+						<0 61 0x204>,
+						<0 62 0x104>,
+						<0 63 0xf04>,
+						<0 64 0x404>,
+						<0 65 0x804>;
+					reserved;
+				};
+				infradma {
+					values = <800 16>;
+					reserved;
+				};
+				pa {
+					values = <640 9>;
+					reserved;
+				};
+				xge {
+					values = <8752 8>;
+					reserved;
+				};
+			};
+			regions {
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ranges;
+				region-12 {
+					id = <12>;
+					values	= <12288 128>;	/* num_desc desc_size */
+					link-index = <0x4000>;
+				};
+				region-13 {
+					id = <13>;
+					values	= <2048 256>;	/* num_desc desc_size */
+					link-index = <0x7000>;
+				};
+				region-14 {
+					id = <14>;
+					values	= <2048 128>;	/* num_desc desc_size */
+					link-index = <0x7800>;
+				};
+			};
+			descriptors {
+				pool-net {
+					values = <11264 128>;	/* num_desc desc_size */
+					region-id = <12>;
+				};
+				pool-udma {
+					values = <1920 256>;	/* num_desc desc_size */
+					region-id = <13>;
+				};
+			};
+		}; /* hwqueue0 */
+
+		padma: pktdma@2004000 {
+			compatible = "ti,keystone-pktdma";
+			reg = <0x2004000 0x100		/* 0 - global  */
+			       0x2004400 0x120		/* 1 - txchan  */
+			       0x2004800 0x300		/* 2 - rxchan  */
+			       0x2004c00 0x120		/* 3 - txsched */
+			       0x2005000 0x400>;	/* 4 - rxflow  */
+			/* loop-back;  */
+			/* bigendian; */
+			dma-coherent;
+			enable-all;
+			debug;
+			/* rx-priority = <0>; */
+			/* tx-priority = <0>; */
+			rx-retry-timeout = <3500>; /* Number of pktdma cycles
+						      to wait before retry on
+						      buffer starvation */
+			logical-queue-managers	= <4>;
+			queues-per-queue-manager = <4096>;
+			qm-base-address = <0x23a80000 0x23a90000
+					   0x23aa0000 0x23ab0000>;
+
+			channels {
+				nettx0 {
+					transmit;
+					label		= "nettx0";
+					pool		= "pool-net";
+					submit-queue	= <648>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				nettx1 {
+					transmit;
+					label		= "nettx1";
+					pool		= "pool-net";
+					submit-queue	= <648>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				nettx2 {
+					transmit;
+					label		= "nettx2";
+					pool		= "pool-net";
+					submit-queue	= <648>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				nettx3 {
+					transmit;
+					label		= "nettx3";
+					pool		= "pool-net";
+					submit-queue	= <648>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				netrx0 {
+					receive;
+					label		= "netrx0";
+					pool		= "pool-net";
+					/* submit-queue   = <xx>; */
+					complete-queue = <8704>;
+					/* debug; */
+					/* channel = <0>; */
+					flow		= <22>;
+				};
+				netrx1 {
+					receive;
+					label		= "netrx1";
+					pool		= "pool-net";
+					/* submit-queue   = <xx>; */
+					complete-queue = <8705>;
+					/* debug; */
+					/* channel = <0>; */
+					flow		= <23>;
+				};
+				netrx2 {
+					receive;
+					label		= "netrx2";
+					pool		= "pool-net";
+					/* submit-queue   = <xx>; */
+					complete-queue = <8706>;
+					/* debug; */
+					/* channel = <0>; */
+					flow		= <24>;
+				};
+				netrx3 {
+					receive;
+					label		= "netrx3";
+					pool		= "pool-net";
+					/* submit-queue   = <xx>; */
+					complete-queue = <8707>;
+					/* debug; */
+					/* channel = <0>; */
+					flow		= <25>;
+				};
+				satx-0 {
+					transmit;
+					label		= "satx-0";
+					pool		= "pool-net";
+					submit-queue	= <646>;
+				};
+				satx-1 {
+					transmit;
+					label		= "satx-1";
+					pool		= "pool-net";
+					submit-queue	= <646>;
+				};
+				patx-pdsp0 {
+					transmit;
+					label		= "patx-pdsp0";
+					pool		= "pool-net";
+					submit-queue	= <640>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				patx-pdsp1 {
+					transmit;
+					label		= "patx-pdsp1";
+					pool		= "pool-net";
+					submit-queue	= <641>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				patx-pdsp5-0 {
+					transmit;
+					label		= "patx-pdsp5-0";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				patx-pdsp5-1 {
+					transmit;
+					label		= "patx-pdsp5-1";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				patx-pdsp5-2 {
+					transmit;
+					label		= "patx-pdsp5-2";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					complete-queue = <8720>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				patx-pdsp5-3 {
+					transmit;
+					label		= "patx-pdsp5-3";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					complete-queue = <8721>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos-bypass-0 {
+					transmit;
+					label		= "qos-bypass-0";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					complete-queue = <8716>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos-bypass-1 {
+					transmit;
+					label		= "qos-bypass-1";
+					pool		= "pool-net";
+					submit-queue	= <645>;
+					complete-queue = <8717>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				parx {
+					receive;
+					label		= "parx";
+					pool		= "pool-net";
+					/* submit-queue   = <xx>; */
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <0>; */
+					flow		= <31>;
+				};
+				crypto-rx0 {
+					receive;
+					label		= "crypto-rx0";
+					pool		= "pool-crypto";
+					complete-queue 	= <8712>;
+					flow		= <26>;
+					rx-error-retry; /* enable retry on
+							   buffer starvation */
+					/* debug; */
+				};
+				crypto-tx {
+					transmit;
+					label		= "crypto-tx";
+					pool		= "pool-crypto";
+					submit-queue	= <646>;
+					complete-queue 	= <8713>;
+					/* debug; */
+				};
+				qos0 {
+					transmit;
+					label		= "qos0";
+					pool		= "pool-net";
+					submit-queue	= <8072>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos1 {
+					transmit;
+					label		= "qos1";
+					pool		= "pool-net";
+					submit-queue	= <8073>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos2 {
+					transmit;
+					label		= "qos2";
+					pool		= "pool-net";
+					submit-queue	= <8074>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos3 {
+					transmit;
+					label		= "qos3";
+					pool		= "pool-net";
+					submit-queue	= <8075>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos4 {
+					transmit;
+					label		= "qos4";
+					pool		= "pool-net";
+					submit-queue	= <8076>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos5 {
+					transmit;
+					label		= "qos5";
+					pool		= "pool-net";
+					submit-queue	= <6400>;
+					complete-queue  = <8718>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos6 {
+					transmit;
+					label		= "qos6";
+					pool		= "pool-net";
+					submit-queue	= <6400>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos7 {
+					transmit;
+					label		= "qos7";
+					pool		= "pool-net";
+					submit-queue	= <6401>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos8 {
+					transmit;
+					label		= "qos8";
+					pool		= "pool-net";
+					submit-queue	= <6402>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos9 {
+					transmit;
+					label		= "qos9";
+					pool		= "pool-net";
+					submit-queue	= <6403>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos10 {
+					transmit;
+					label		= "qos10";
+					pool		= "pool-net";
+					submit-queue	= <6404>;
+					/* complete-queue = <xx>; */
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+				qos11 {
+					transmit;
+					label		= "qos11";
+					pool		= "pool-net";
+					submit-queue	= <6405>;
+					complete-queue  = <8708>;
+					/* debug; */
+					/* channel = <xx>; */
+					/* priority = <1>; */
+				};
+			};
+		};
+
+		infradma: pktdma@2a08000 {
+			logical-queue-managers	= <4>;
+			qm-base-address = <0x23a80000 0x23a90000
+					  0x23aa0000 0x23ab0000>;
+
+			channels {
+				udmatx0 {
+					transmit;
+					label		= "udmatx0";
+					pool		= "pool-udma";
+					submit-queue	= <800>;
+					/* complete-queue  = <0> */
+					/* debug; */
+					channel		= <0>;
+					priority	= <1>;
+					flowtag		= <0>;
+				};
+				udmatx1 {
+					transmit;
+					label		= "udmatx1";
+					pool		= "pool-udma";
+					submit-queue	= <801>;
+					/* complete-queue  = <1> */
+					/* debug; */
+					channel		= <1>;
+					priority	= <1>;
+					flowtag		= <1>;
+				};
+				udmatx2 {
+					transmit;
+					label		= "udmatx2";
+					pool		= "pool-udma";
+					submit-queue	= <802>;
+					/* complete-queue  = <2> */
+					/* debug; */
+					channel		= <2>;
+					priority	= <1>;
+					flowtag		= <2>;
+				};
+				udmatx3 {
+					transmit;
+					label		= "udmatx3";
+					pool		= "pool-udma";
+					submit-queue	= <803>;
+					/* complete-queue  = <3> */
+					/* debug; */
+					channel		= <3>;
+					priority	= <1>;
+					flowtag		= <3>;
+				};
+				udmatx4 {
+					transmit;
+					label		= "udmatx4";
+					pool		= "pool-udma";
+					submit-queue	= <804>;
+					/* complete-queue  = <4> */
+					/* debug; */
+					channel		= <4>;
+					priority	= <1>;
+					flowtag		= <4>;
+				};
+				udmatx5 {
+					transmit;
+					label		= "udmatx5";
+					pool		= "pool-udma";
+					submit-queue	= <805>;
+					/* complete-queue  = <5> */
+					/* debug; */
+					channel		= <5>;
+					priority	= <1>;
+					flowtag		= <5>;
+				};
+				udmatx6 {
+					transmit;
+					label		= "udmatx6";
+					pool		= "pool-udma";
+					submit-queue	= <806>;
+					/* complete-queue  = <6> */
+					/* debug; */
+					channel		= <6>;
+					priority	= <1>;
+					flowtag		= <6>;
+				};
+				udmatx7 {
+					transmit;
+					label		= "udmatx7";
+					pool		= "pool-udma";
+					submit-queue	= <807>;
+					/* complete-queue  = <7> */
+					/* debug; */
+					channel		= <7>;
+					priority	= <1>;
+					flowtag		= <7>;
+				};
+				udmatx8 {
+					transmit;
+					label		= "udmatx8";
+					pool		= "pool-udma";
+					submit-queue	= <808>;
+					/* complete-queue  = <8> */
+					/* debug; */
+					channel		= <8>;
+					priority	= <1>;
+					flowtag		= <8>;
+				};
+				udmatx9 {
+					transmit;
+					label		= "udmatx9";
+					pool		= "pool-udma";
+					submit-queue	= <809>;
+					/* complete-queue  = <9> */
+					/* debug; */
+					channel		= <9>;
+					priority	= <1>;
+					flowtag		= <9>;
+				};
+				udmatx10 {
+					transmit;
+					label		= "udmatx10";
+					pool		= "pool-udma";
+					submit-queue	= <810>;
+					/* complete-queue  = <10> */
+					/* debug; */
+					channel		= <10>;
+					priority	= <1>;
+					flowtag		= <10>;
+				};
+				udmatx11 {
+					transmit;
+					label		= "udmatx11";
+					pool		= "pool-udma";
+					submit-queue	= <811>;
+					/* complete-queue  = <11> */
+					/* debug; */
+					channel		= <11>;
+					priority	= <1>;
+					flowtag		= <11>;
+				};
+				udmatx12 {
+					transmit;
+					label		= "udmatx12";
+					pool		= "pool-udma";
+					submit-queue	= <812>;
+					/* complete-queue  = <12> */
+					/* debug; */
+					channel		= <12>;
+					priority	= <1>;
+					flowtag		= <12>;
+				};
+				udmatx13 {
+					transmit;
+					label		= "udmatx13";
+					pool		= "pool-udma";
+					submit-queue	= <813>;
+					/* complete-queue  = <13> */
+					/* debug; */
+					channel		= <13>;
+					priority	= <1>;
+					flowtag		= <13>;
+				};
+				udmatx14 {
+					transmit;
+					label		= "udmatx14";
+					pool		= "pool-udma";
+					submit-queue	= <814>;
+					/* complete-queue  = <14> */
+					/* debug; */
+					channel		= <14>;
+					priority	= <1>;
+					flowtag		= <14>;
+				};
+				udmatx15 {
+					transmit;
+					label		= "udmatx15";
+					pool		= "pool-udma";
+					submit-queue	= <815>;
+					/* complete-queue  = <15> */
+					/* debug; */
+					channel		= <15>;
+					priority	= <1>;
+					flowtag		= <15>;
+				};
+				udmarx0 {
+					receive;
+					label		= "udmarx0";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <16> */
+					/* debug; */
+					channel		= <0>;
+					flow		= <0>;
+				};
+				udmarx1 {
+					receive;
+					label		= "udmarx1";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <17> */
+					/* debug; */
+					channel		= <1>;
+					flow		= <1>;
+				};
+				udmarx2 {
+					receive;
+					label		= "udmarx2";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <18> */
+					/* debug; */
+					channel		= <2>;
+					flow		= <2>;
+				};
+				udmarx3 {
+					receive;
+					label		= "udmarx3";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <19> */
+					/* debug; */
+					channel		= <3>;
+					flow		= <3>;
+				};
+				udmarx4 {
+					receive;
+					label		= "udmarx4";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <20> */
+					/* debug; */
+					channel		= <4>;
+					flow		= <4>;
+				};
+				udmarx5 {
+					receive;
+					label		= "udmarx5";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <21> */
+					/* debug; */
+					channel		= <5>;
+					flow		= <5>;
+				};
+				udmarx6 {
+					receive;
+					label		= "udmarx6";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <22> */
+					/* debug; */
+					channel		= <6>;
+					flow		= <6>;
+				};
+				udmarx7 {
+					receive;
+					label		= "udmarx7";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <23> */
+					/* debug; */
+					channel		= <7>;
+					flow		= <7>;
+				};
+				udmarx8 {
+					receive;
+					label		= "udmarx8";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <24> */
+					/* debug; */
+					channel		= <8>;
+					flow		= <8>;
+				};
+				udmarx9 {
+					receive;
+					label		= "udmarx9";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <25> */
+					/* debug; */
+					channel		= <9>;
+					flow		= <9>;
+				};
+				udmarx10 {
+					receive;
+					label		= "udmarx10";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <26> */
+					/* debug; */
+					channel		= <10>;
+					flow		= <10>;
+				};
+				udmarx11 {
+					receive;
+					label		= "udmarx11";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <27> */
+					/* debug; */
+					channel		= <11>;
+					flow		= <11>;
+				};
+				udmarx12 {
+					receive;
+					label		= "udmarx12";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <28> */
+					/* debug; */
+					channel		= <12>;
+					flow		= <12>;
+				};
+				udmarx13 {
+					receive;
+					label		= "udmarx13";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <29> */
+					/* debug; */
+					channel		= <13>;
+					flow		= <13>;
+				};
+				udmarx14 {
+					receive;
+					label		= "udmarx14";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <30> */
+					/* debug; */
+					channel		= <14>;
+					flow		= <14>;
+				};
+				udmarx15 {
+					receive;
+					label		= "udmarx15";
+					pool		= "pool-udma";
+					/* submit-queue = <xx>; */
+					/* complete-queue  = <31> */
+					/* debug; */
+					channel		= <15>;
+					flow		= <15>;
+				};
+			};
+		};
+
+		/include/ "k2hk-net.dtsi"
+
+		crypto: crypto@20c0000 {
+			compatible = "ti,keystone-crypto";
+			dma-coherent;
+			reg = <0x20c0000 0x40000>;
+			clocks = <&clksa>;
+			tx_channel = "crypto-tx";
+			tx_queue_depth = <256>;
+
+			rx_channel = "crypto-rx0";
+			rx_queue_depth = <256 64 0 0>;
+			rx_buffer_size = <1500 4096 0 0>;
+
+			sc-id = <0x7000 0x71ff>;
+		};
+
+		xgedma: pktdma@2fa1000 {
+			compatible = "ti,keystone-pktdma";
+			reg = <0x2fa1000 0x100		/* 0 - global  */
+			       0x2fa1400 0x200		/* 1 - txchan  */
+			       0x2fa1800 0x200		/* 2 - rxchan  */
+			       0x2fa1c00 0x200		/* 3 - txsched */
+			       0x2fa2000 0x400>;	/* 4 - rxflow  */
+			/* loop-back;  */
+			/* bigendian; */
+			enable-all;
+			/* debug */
+			dma-coherent;
+			/* rx-priority = <0>; */
+			/* tx-priority = <0>; */
+			logical-queue-managers	= <4>;
+			queues-per-queue-manager = <4096>;
+			qm-base-address = <0x23a80000 0x23a90000
+					   0x23aa0000 0x23ab0000>;
+
+			channels {
+				xgetx0 {
+					transmit;
+					label		= "xgetx0";
+					pool		= "pool-xge";
+					submit-queue	= <8752>;
+					/* complete-queue = <8714>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				xgetx1 {
+					transmit;
+					label		= "xgetx1";
+					pool		= "pool-xge";
+					submit-queue	= <8753>;
+					/* complete-queue = <8715>; */
+					/* debug; */
+					/* channel = <0>; */
+					/* priority = <1>; */
+				};
+				xgerx0 {
+					receive;
+					label		= "xgerx0";
+					pool		= "pool-xge";
+					/* submit-queue   = <xx>; */
+					complete-queue	= <8710>;
+					/* debug; */
+					channel		= <0>;
+					flow		= <0>;
+				};
+				xgerx1 {
+					receive;
+					label		= "xgerx1";
+					pool		= "pool-xge";
+					/* submit-queue   = <xx>; */
+					complete-queue	= <8711>;
+					/* debug; */
+					channel		= <8>;
+					flow		= <8>;
+				};
+			};
+		};
+
+                debugss: debugss {
+                        compatible = "ti,keystone-debugss";
+                        clocks = <&mainpllclk>, <&armpllclk>, <&clkdebugsstrc>, <&gemtraceclk>, <&clktetbtrc>;
+                        clock-names = "mainpllclock", "armpllclock", "debugssclock", "gemtraceclock", "tetbclock";
+                };
+
+		sysctrl {
+			interrupts = <0 24 0xf01>, /* L1L2 ECC error interrupt */
+				<0 448 0xf01>; /* DDR3 ECC error interrupt */
+		};
+
+		pmu {
+			compatible = "arm,cortex-a15-pmu";
+			interrupts = <0 20 0xf01>,
+				     <0 21 0xf01>,
+				     <0 22 0xf01>,
+				     <0 23 0xf01>;
+		};
+
+		pci-controller@21800000 {
+			status = "ok";
+		};
+	};
+};

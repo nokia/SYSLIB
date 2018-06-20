@@ -1,0 +1,468 @@
+/*
+ * Keystone 2 Hawking/Kepler EVM device tree file
+ *
+ * Copyright (c) 2012-14, Texas Instruments Inc
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ * * Redistributions of source code must retain the above copyright
+ *	notice, this list of conditions and the following disclaimer.
+ * * Redistributions in binary form must reproduce the above copyright
+ *	notice, this list of conditions and the following disclaimer in
+ *	the documentation and/or other materials provided with the
+ *	distribution.
+ * * Neither the name of TI nor the names of its contributors may be
+ *	used to endorse or promote products derived from this software
+ *	without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS
+ * IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+ * TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A
+ * PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * HOLDER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED
+ * TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR
+ * PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF
+ * LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+ * NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+/dts-v1/;
+
+/include/ "keystone.dtsi"
+/include/ "k2hk.dtsi"
+
+/ {
+	compatible = "ti,k2hk-evm", "ti,keystone";
+
+	aliases {
+		ethernet1 = &interface1;
+		mdio-gpio0 = <&mdiox0>;
+	};
+
+    /*****************************************************************************
+     * SYSLIB qos tree changes:
+     *  - L3 Shapers send packets back to PDSP5 i.e. 645
+     *  - L2 Shapers send the packets to CPSW i.e. 648
+     *****************************************************************************/
+	l3qostree: l3-qos-tree {
+		output-queue = <645>;		/* L3 QOS outputs to PDSP5 for L2 QOS */
+	};
+	l2qostree0: l2-qos-tree-eth0 {
+		output-queue = <648>;		/* L2 QOS on eth0 outputs to CPSW */
+	};
+	l2qostree1: l2-qos-tree-eth1 {
+		output-queue = <648>;		/* L2 QOS on eth1 outputs to CPSW */
+	};
+
+	/include/ "keystone-qostree.dtsi"
+
+	soc {
+		clocks {
+			refclkmain: refclkmain {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+				clock-frequency = <122880000>;
+				clock-output-names = "refclk-main";
+			};
+
+			refclkarm: refclkarm {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+				clock-frequency = <125000000>;
+				clock-output-names = "refclk-arm";
+			};
+
+			refclkpass: refclkpass {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+				clock-frequency = <122880000>;
+				clock-output-names = "refclk-pass";
+			};
+
+			refclkddr3a: refclkddr3a {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+				clock-frequency = <100000000>;
+				clock-output-names = "refclk-ddr3a";
+			};
+
+			refclkddr3b: refclkddr3b {
+				#clock-cells = <0>;
+				compatible = "fixed-clock";
+				clock-frequency = <100000000>;
+				clock-output-names = "refclk-ddr3b";
+			};
+
+		};
+
+		aemif@30000000 {
+			nand_cs:cs2@30000000 {
+				compatible = "ti,davinci-cs";
+				#address-cells = <1>;
+				#size-cells = <1>;
+				/* all timings in nanoseconds */
+				ti,davinci-cs-ta = <12>;
+				ti,davinci-cs-rhold = <6>;
+				ti,davinci-cs-rstrobe = <23>;
+				ti,davinci-cs-rsetup = <9>;
+				ti,davinci-cs-whold = <8>;
+				ti,davinci-cs-wstrobe = <23>;
+				ti,davinci-cs-wsetup = <8>;
+			};
+
+			nand@2,0 {
+				compatible = "ti,davinci-nand";
+				reg = <2 0x0 0x8000000
+					6 0x0 0x100>;
+				#address-cells = <1>;
+				#size-cells = <1>;
+				ti,davinci-chipselect = <0>;
+				ti,davinci-mask-ale = <0x2000>;
+				ti,davinci-mask-cle = <0x4000>;
+				ti,davinci-mask-chipsel = <0>;
+				ti,davinci-ecc-mode = "hw";
+				ti,davinci-ecc-bits = <4>;
+				ti,davinci-nand-use-bbt;
+				ti,davinci-no-subpage-write;
+				clocks = <&clkaemif>;
+				clock-names = "aemif";
+
+				partition@0 {
+					label = "u-boot";
+					reg = <0x0 0x100000>;
+					read-only;
+				};
+
+				partition@100000 {
+					label = "params";
+					reg = <0x100000 0x80000>;
+					read-only;
+				};
+
+				partition@180000 {
+					label = "ubifs";
+					reg = <0x180000 0x1fe80000>;
+				};
+			};
+		};
+
+		hwqueue0: hwqueue@2a40000 {
+			queues {
+				qos-inputs-1 {
+					values			= <8000 192>;
+					pdsp-id			= <3>;
+					ticks-per-sec		= <10000>;
+					qos-cfg			= <4 50 1 1 0xf00 0 0>;
+					sched-port-configs	= <0 20 0x1c8>;
+					drop-out-profiles	= <0 36 0xc>;
+					drop-cfg-profiles	= <0 8 0x14>;
+					drop-queue-configs	= <0 80 0x4>;
+					drop-policies           = <&droppolicies>;
+					qos-tree                = <&l3qostree>;
+					statistics-profiles	= <0 48>;
+					reserved;
+				};
+				qos-inputs-2 {
+					values			= <6400 192>;
+					pdsp-id			= <7>;
+					ticks-per-sec		= <10000>;
+					qos-cfg			= <4 50 1 1 0xf00 0 0>;
+					sched-port-configs	= <0 20 0x1c8>;
+					drop-out-profiles	= <0 36 0xc>;
+					drop-cfg-profiles	= <0 8 0x14>;
+					drop-queue-configs	= <0 80 0x4>;
+					drop-policies           = <&droppolicies>;
+					qos-tree                = <&l2qostree0 &l2qostree1>;
+					statistics-profiles	= <0 48>;
+					reserved;
+				};
+			};
+		};
+
+		uio_hyperlink0: hyperlink0 {
+			compatible = "ti,uio-module-drv";
+			mem  = <0x21400000 0x00000100
+				0x40000000 0x10000000
+				0x0231a000 0x00002000>;
+			clocks = <&clkhyperlink0>;
+			interrupts	= <0 387 0x101>;
+			label = "hyperlink0";
+			cfg-params
+			{
+				ti,serdes_refclk_khz = <312500>;
+				ti,serdes_maxserrate_khz = <6250000>;
+				ti,serdes_lanerate = "half";
+				ti,serdes_numlanes = <4>;
+				ti,serdes_c1 = <4 4 4 4>;
+				ti,serdes_c2 = <0 0 0 0>;
+				ti,serdes_cm = <0 0 0 0>;
+				ti,serdes_tx_att = <12 12 12 12>;
+				ti,serdes_tx_vreg = <4 4 4 4>;
+				ti,serdes_rx_att = <11 11 11 11>;
+				ti,serdes_rx_boost = <3 3 3 3>;
+			};
+		};
+
+		uio_hyperlink1: hyperlink1 {
+			compatible = "ti,uio-module-drv";
+			mem  = <0x21400100 0x00000100
+				0x28000000 0x08000000
+				0x0231c000 0x00002000>;
+			clocks = <&clkhyperlink1>;
+			interrupts	= <0 388 0x101>;
+			label = "hyperlink1";
+			cfg-params
+			{
+				ti,serdes_refclk_khz = <312500>;
+				ti,serdes_maxserrate_khz = <6250000>;
+				ti,serdes_lanerate = "half";
+				ti,serdes_numlanes = <4>;
+				ti,serdes_c1 = <4 4 4 4>;
+				ti,serdes_c2 = <0 0 0 0>;
+				ti,serdes_cm = <0 0 0 0>;
+				ti,serdes_tx_att = <12 12 12 12>;
+				ti,serdes_tx_vreg = <4 4 4 4>;
+				ti,serdes_rx_att = <11 11 11 11>;
+				ti,serdes_rx_boost = <3 3 3 3>;
+			};
+		};
+
+		uio_srio: srio {
+			compatible = "ti,uio-module-drv";
+			mem  = <0x0232C000 0x00002000
+				0x02900000 0x00040000
+				0x0232C000 0x00002000>;
+			clocks=<&clksrio>;
+			interrupts = <0 154 0xf01>;
+			label = "srio";
+		};
+
+        /*****************************************************************************
+         * SYSLIB interrupt definitions:
+         *  - The sections below have been added to hook the required interrupts with
+         *    the UIO driver.
+         *****************************************************************************/
+
+        /******************************************************************************
+         * Queue Pend Interrupts: This section should be correlated with the Queue Pend
+         * usage by the kernel. Hook only queues which are not used by the kernel with
+         * the UIO driver.
+         ******************************************************************************/
+        uio_uintc40: uintc40 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 40 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc40";
+        };
+        uio_uintc41: uintc41 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 41 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc41";
+        };
+        uio_uintc42: uintc42 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 42 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc42";
+        };
+        uio_uintc43: uintc43 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 43 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc43";
+        };
+        uio_uintc44: uintc44 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 44 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc44";
+        };
+        uio_uintc45: uintc45 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 45 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc40";
+        };
+        uio_uintc46: uintc46 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 46 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc46";
+        };
+        uio_uintc47: uintc47 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 47 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc47";
+        };
+        uio_uintc66: uintc66 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 66 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc66";
+        };
+        uio_uintc67: uintc67 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 67 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc67";
+        };
+        uio_uintc68: uintc68 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 68 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc68";
+        };
+        uio_uintc69: uintc69 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 69 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc69";
+        };
+        uio_uintc70: uintc70 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 70 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc70";
+        };
+        uio_uintc71: uintc71 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 71 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc71";
+        };
+        uio_uintc72: uintc72 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 72 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc72";
+        };
+        uio_uintc73: uintc73 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 73 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc73";
+        };
+        uio_uintc74: uintc74 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 74 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc74";
+        };
+        uio_uintc75: uintc75 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 75 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc75";
+        };
+        uio_uintc76: uintc76 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 76 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc76";
+        };
+        uio_uintc77: uintc77 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 77 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc77";
+        };
+        uio_uintc78: uintc78 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 78 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc78";
+        };
+        uio_uintc79: uintc79 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 79 0x101>;
+            interrupt-mode  = <1>;               /* One shot interrupt */
+            label = "uintc79";
+        };
+
+        /******************************************************************************
+         * Accumulated Interrupts: [PDSP3]
+         ******************************************************************************/
+        uio_uintc253: uintc253 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 253 0x101>;
+            label = "uintc253";
+        };
+        uio_uintc254: uintc254 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 254 0x101>;
+            label = "uintc254";
+        };
+        uio_uintc255: uintc255 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 255 0x101>;
+            label = "uintc255";
+        };
+        uio_uintc256: uintc256 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 256 0x101>;
+            label = "uintc256";
+        };
+        uio_uintc257: uintc257 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 257 0x101>;
+            label = "uintc257";
+        };
+        uio_uintc258: uintc258 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 258 0x101>;
+            label = "uintc258";
+        };
+        uio_uintc259: uintc259 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 259 0x101>;
+            label = "uintc259";
+        };
+        uio_uintc260: uintc260 {
+            compatible      = "ti,uio-module-drv";
+            interrupts      = <0 260 0x101>;
+            label = "uintc260";
+        };
+
+        /******************************************************************************
+         * IPC Interrupts:
+         *  The interrupt number is the source identifier.
+         ******************************************************************************/
+        uio_uintc16: uintc16 {
+            compatible        = "ti,uio-module-drv";
+            interrupt-parent  = <&ipcirq0>;
+            interrupts        = <16 0>;      /* Source Identifier 16 */
+            label = "uintc16";
+        };
+        uio_uintc17: uintc17 {
+            compatible        = "ti,uio-module-drv";
+            interrupt-parent  = <&ipcirq0>;
+            interrupts        = <17 0>;      /* Source Identifier 17 */
+            label = "uintc17";
+        };
+        uio_uintc18: uintc18 {
+            compatible        = "ti,uio-module-drv";
+            interrupt-parent  = <&ipcirq0>;
+            interrupts        = <18 0>;      /* Source Identifier 18 */
+            label = "uintc18";
+        };
+
+        /*****************************************************************************
+         * SYSLIB EMU Counter memory map through UIO definition
+         *  - The sections below have been added to map the EMU Counter regsiter
+         * through UIO
+         *****************************************************************************/
+         uio_emucnt: emucnt {
+             compatible = "ti,uio-module-drv";
+             mem  = <0x023101f0 0x00000010>;
+             freq = <0x0 0x3B9ACA00>;
+             label = "emucnt";
+         };
+	};
+};

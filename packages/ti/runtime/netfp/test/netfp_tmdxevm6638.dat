@@ -1,0 +1,24 @@
+# #############################################################
+# This is the NETFP Configuration file and is used to store 
+# relevant information which is required to create the fast 
+# path. This is the template file which is used by the unit 
+# tests. 
+#
+# Please modify the file as per the customer test setup
+# #############################################################
+
+# This is the MAC address of the eNodeB which is visible across
+# the EPC. The MAC address configured here should be the same
+# MAC Address as that of the Linux (ARM)
+ENODEB_MAC_ADDRESS = 00.17.EA.F7.1A.F4;
+
+# This is the IP address of the eNodeB which is visible across
+# the EPC. The IP address configured here should be the same 
+# IP address as that of Linux (eth1) 
+ENODEB_IP_ADDRESS    = 192.168.1.100;
+
+# Remote Networking information:
+RNC_IP_ADDRESS      = 192.168.1.10;
+RNC_MAC_ADDRESS     = 90.e2.ba.15.93.fa;
+
+

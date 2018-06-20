@@ -1,0 +1,35 @@
+#!/bin/sh
+#Configuration script to setup test environment
+
+ifconfig eth0 0.0.0.0 up
+
+#Create a VLAN interface for Control Plane (CP) and User Plane (UP) traffic
+vconfig add eth0 2
+
+#Setup a private IPv4 address for Control Plane (CP) and User Plane (UP) traffic
+ifconfig eth0.2 192.168.1.2 up
+
+#Setup IPv4 default route for CP/UP interface
+ip route add default via 192.168.1.1 dev eth0.2
+
+#Setup a private IPv6 address for Control Plane (CP) and User Plane (UP) traffic
+ip addr add 7000::2/64 dev eth0.2
+
+#Create a VLAN interface for Management Plane (MP)
+vconfig add eth0 3
+
+#Setup a private IPv4 address for Management Plane (MP) traffic
+ifconfig eth0.3 192.168.2.2 up
+
+#Setup IPv4 default route for MP interface
+ip route add default via 192.168.2.1 dev eth0.3
+
+#Setup IPSec related configuration files
+cp ./conf/common/caCert.der /etc/ipsec.d/cacerts/
+cp ./conf/common/evm/betaCert.der /etc/ipsec.d/certs/
+cp ./conf/common/evm/betaKey.der /etc/ipsec.d/private/
+cp ./conf/common/evm/ipsec.secrets /etc/
+cp ./conf/syslib_duc_lte_trust_7/evm/ipsec.conf /etc/
+
+#Start the Strongswan IKEv2 daemon
+ipsec start

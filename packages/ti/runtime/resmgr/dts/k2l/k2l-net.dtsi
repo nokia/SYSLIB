@@ -1,0 +1,315 @@
+/*
+ * Copyright 2014 Texas Instruments, Inc.
+ *
+ * Keystone 2 K2L SoC network node
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+mdio: mdio@26200f00 {
+	compatible	= "ti,davinci_mdio";
+	#address-cells	= <1>;
+	#size-cells	= <0>;
+	reg		= <0x26200f00 0x100>;
+	bus_freq	= <2500000>;
+	clocks		= <&clkcpgmac>;
+	clock-names	= "fck";
+	phy0: phy@0 {
+		compatible = "marvell,88e1510";
+		reg = <0>;
+	};
+	phy1: phy@1 {
+		compatible = "marvell,88e1510";
+		reg = <1>;
+	};
+};
+
+netcp {
+	reg = <0x26000000 0xf00
+		0x2620110 0x8>;
+	compatible = "ti,keystone-netcp";
+	clocks = <&paclk13>, <&clkcpgmac>, <&chipclk12>;
+	clock-names = "clk_pa", "clk_cpgmac", "cpsw_cpts_rft_clk";
+	dma-coherent;
+	streaming-regs = <0x26000500 0x40>;
+
+	interfaces {
+		interface0: interface-0 {
+			rx-channel = "netrx0";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <1>;
+			/* local-mac-address = [02 18 31 7e 3e 6e]; */
+		};
+		interface1: interface-1 {
+			rx-channel = "netrx1";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 6f];*/
+		};
+		interface2: interface-2 {
+			rx-channel = "netrx2";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 7e]; */
+		};
+		interface3: interface-3 {
+			rx-channel = "netrx3";
+			rx-queue-depth = <128 128 0 0>;
+			rx-buffer-size = <1536 4096 0 0>;
+			efuse-mac = <0>;
+			/*local-mac-address = [02 18 31 7e 3e 7f]; */
+		};
+	};
+
+	cpsw: cpsw@26200000 {
+		cpsw-ss-reg = <0x26200000 0x40000>;
+		label = "keystone-cpsw2";
+
+		intf_tx_queues = <7>;
+
+		sgmii_module_ofs  = <0x100>;
+		switch_module_ofs = <0x20000>;
+		host_port_reg_ofs = <0x21000>;
+		slave_reg_ofs	  = <0x22000>;
+		hw_stats_reg_ofs  = <0x3a000>;
+		cpts_reg_ofs	  = <0x3d000>;
+		ale_reg_ofs	  = <0x3e000>;
+
+		num_slaves  = <4>;
+
+		ale_ageout  = <30>;
+		ale_entries = <1024>;
+		ale_ports   = <5>;
+
+		cpts_rftclk_sel = <0>;
+		/*cpts_rftclk_freq = <399360000>;*/
+		cpts_ts_comp_length = <3>;
+		cpts_ts_comp_polarity = <1>;  /* 1 - assert high */
+		/* cpts_clock_mult = <5000>; */
+		/* cpts_clock_shift = <10>; */
+		/* cpts_clock_div = <3>; */
+		/* force_no_hwtstamp; */
+
+		multi-interface;
+		num-interfaces = <4>;
+		slaves-per-interface = <1>;
+
+		interfaces {
+			interface-0 {
+				slave_port = <0>;
+				tx-channel = "nettx0";
+				tx_queue_depth = <32>;
+			};
+			interface-1 {
+				slave_port = <1>;
+				tx-channel = "nettx1";
+				tx_queue_depth = <32>;
+			};
+			interface-2 {
+				slave_port = <2>;
+				tx-channel = "nettx2";
+				tx_queue_depth = <32>;
+			};
+			interface-3 {
+				slave_port = <3>;
+				tx-channel = "nettx3";
+				tx_queue_depth = <32>;
+			};
+		};
+
+		slaves {
+			slave0 {
+				label		= "slave0";
+				link-interface	= <1>;
+				phy-handle      = <&phy0>;
+			};
+			slave1 {
+				label		= "slave1";
+				link-interface	= <1>;
+				phy-handle      = <&phy1>;
+			};
+			slave2 {
+				label		= "slave2";
+				link-interface	= <2>;
+			};
+			slave3 {
+				label		= "slave3";
+				link-interface	= <2>;
+			};
+		};
+		serdeses {
+			serdes-at-probe	   = <1>;
+
+			serdes0 {
+				regs		   = <0x0232a000 0x2000>;
+				refclk-khz	   = <156250>;
+				link-rate-kbps	   = <1250000>;
+				phy-type	   = "sgmii";
+				max-lanes	   = <2>;
+				/*debug;*/
+				/*rx-force-enable;*/
+				lane0 {
+					/*disable;*/
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+				lane1 {
+					/*disable;*/
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+			};
+
+			serdes1 {
+				regs		   = <0x02320000 0x2000>;
+				refclk-khz	   = <156250>;
+				link-rate-kbps	   = <1250000>;
+				phy-type	   = "sgmii";
+				max-lanes	   = <2>;
+				/*debug;*/
+				/*rx-force-enable;*/
+				lane0 {
+					disable;
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+				lane1 {
+					disable;
+					/*loopback;*/
+					control-rate	= <2>; /* quart */
+					rx-start	= <7 5>;
+					rx-force	= <1 1>;
+					tx-coeff	= <0 0 0 12 4>;
+						       /* c1 c2 cm att vreg */
+				};
+			};
+		};
+	};
+
+	pa: pa@26000000 {
+		label = "keystone-pa2";
+		reg_base                = <0x26000000>;
+		checksum-offload        = <0>; /* 1 - HW offload */
+		txhook-order            = <10>;
+		txhook-softcsum         = <40>;
+		rxhook-order            = <10>;
+
+		tx_cmd_queue_depth      = <64>;
+		tx_data_queue_depth     = <1024>;
+		rx_pool_depth           = <64>;
+		rx_buffer_size          = <128>;
+		lut-ranges              = <0 43 248 255>;
+		/* mark_mcast_match	= <0x12345a00 0xffffff00>; */
+		firmware		=
+				"keystone/pa_in0_pdsp0.fw",	/*  0 */
+				"keystone/pa_in0_pdsp1.fw",	/*  1 */
+				"keystone/pa_in1_pdsp0.fw",	/*  2 */
+				"keystone/pa_in1_pdsp1.fw",	/*  3 */
+				"keystone/pa_in2_pdsp0.fw",	/*  4 */
+				"keystone/pa_in3_pdsp0.fw",	/*  5 */
+				"keystone/pa_in4_pdsp0.fw",	/*  6 */
+				"keystone/pa_in4_pdsp1.fw",	/*  7 */
+				"keystone/pa_post_pdsp0.fw",	/*  8 */
+				"keystone/pa_post_pdsp1.fw",	/*  9 */
+				"keystone/pa_eg0_pdsp0.fw",	/* 10 */
+				"keystone/pa_eg0_pdsp1.fw",	/* 11 */
+				"keystone/pa_eg0_pdsp2.fw",	/* 12 */
+				"keystone/pa_eg1_pdsp0.fw",	/* 13 */
+				"keystone/pa_eg2_pdsp0.fw";	/* 14 */
+	};
+
+	sa: sa@26080000 {
+		label = "keystone-sa";
+		multi-interface;
+		interface-0;
+		interface-1;
+		/* Optional: Specify NATT port for fragmentation detection */
+		natt-port = <0>;
+		tx_queue_depth = <32>;
+		netcp_ver = <1>;	/* 0: NETCP v1.0, 1: NSS 1.0 */
+	};
+
+	qos: qos@0 {
+		label = "keystone-qos";
+		multi-interface;
+
+		interface-0 {
+			chan-0 {
+				tx-channel = "qos-bypass-0";
+				tx_queue_depth = <1024>;
+			};
+			chan-1 {
+				tx-channel = "qos0-0";
+				tx_queue_depth = <64>;
+			};
+			chan-2 {
+				tx-channel = "qos1-0";
+				tx_queue_depth = <64>;
+			};
+			chan-3 {
+				tx-channel = "qos2-0";
+				tx_queue_depth = <64>;
+			};
+			chan-4 {
+				tx-channel = "qos3-0";
+				tx_queue_depth = <64>;
+			};
+			chan-5 {
+				tx-channel = "qos4-0";
+				tx_queue_depth = <64>;
+			};
+			chan-6 {
+				tx-channel = "qos5-0";
+				tx_queue_depth = <64>;
+			};
+		};
+		interface-1 {
+			chan-0 {
+				tx-channel = "qos-bypass-1";
+				tx_queue_depth = <1024>;
+			};
+			chan-1 {
+				tx-channel = "qos0-1";
+				tx_queue_depth = <64>;
+			};
+			chan-2 {
+				tx-channel = "qos1-1";
+				tx_queue_depth = <64>;
+			};
+			chan-3 {
+				tx-channel = "qos2-1";
+				tx_queue_depth = <64>;
+			};
+			chan-4 {
+				tx-channel = "qos3-1";
+				tx_queue_depth = <64>;
+			};
+			chan-5 {
+				tx-channel = "qos4-1";
+				tx_queue_depth = <64>;
+			};
+			chan-6 {
+				tx-channel = "qos5-1";
+				tx_queue_depth = <64>;
+			};
+		};
+	};
+};
+

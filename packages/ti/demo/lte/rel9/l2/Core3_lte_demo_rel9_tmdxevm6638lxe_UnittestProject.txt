@@ -1,0 +1,12 @@
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/common/root_dsp_client.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/l2_sched.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/fapi.c"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/core3.cfg"
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/osal.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/logging.c" 
+-ccs.linkFile "SYSLIB_INSTALL_PATH/ti/demo/lte/rel9/l2/linker_core3.cmd" 
+-ccs.linkFile "CPPIDEV_INSTALL_PATH/src/cppi_device.c"
+-ccs.linkFile "QMSSDEV_INSTALL_PATH/src/qmss_device.c"
+-ccs.setCompilerOptions "-DBUILDENV -DDEVICE_K2 -mv6600 -g --diag_warning=225 -I${PDK_INSTALL_PATH}/ti/drv/cppi -I${PDK_INSTALL_PATH}/ti/drv/qmss" -rtsc.enableRtsc 
+-ccs.setLinkerOptions "--ram_model --define=DBUILDENV"
+-ccs.setCompilerOptions "-D${DEVICE_DEFINE}"

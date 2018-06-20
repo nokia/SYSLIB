@@ -1,0 +1,252 @@
+/*
+ * Common DT bindings for Network QoS on Keystone SoCs
+ *
+ * Copyright (C) 2014 Texas Instruments, Inc.
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License version 2 as
+ * published by the Free Software Foundation.
+ */
+
+droppolicies: default-drop-policies {
+	no-drop {
+		default;
+		packet-units;
+		limit = <0>;
+	};
+	tail-drop-64pkts {
+		packet-units;
+		limit = <64>;
+	};
+	tail-drop-100pkts {
+		packet-units;
+		limit = <100>;
+	};
+	tail-drop-32kb {
+		byte-units;
+		limit = <32768>;
+	};
+	tail-drop-64kb {
+		byte-units;
+		limit = <65536>;
+	};
+	red-32kb-128kb {
+		byte-units;
+		limit = <196608>;
+		random-early-drop = <32768 131072 2 2000>;
+	};
+	red-32kb-64kb {
+		byte-units;
+		limit = <131072>;
+		random-early-drop = <32768 65536 2 2000>;
+	};
+	all-drop {
+		byte-units;
+		limit = <0>;
+	};
+};
+
+/****************************************************************/
+/* L3 shaper used by Linux/Fast Path 							*/
+/* This sample shaper defines eitght classes of services: 		*/
+/* 	- one best effort (cos0), 									*/
+/*  - six weighted round robin of equial weight (cos1-cos6),	*/
+/*  - one high priority (cos7)									*/
+/****************************************************************/
+l3qostree: l3-qos-tree {
+	blended-scheduler;				/* Use both strict and round robin scheduling */
+	byte-units;						/* packet-units or byte-units */
+	output-rate = <31250000 25000>;	/* 31250000Bps = 250Mbps, 25kB of maximum accumulated credit */
+	overhead-bytes = <0>;			/* No byte adjustement needed for L3 shaper */
+
+	hp-cos7 {
+		byte-units;					/* packet-units or byte-units */
+		priority = <0>;				/* highest strict priority */
+		input-queues = <8079>;
+		stats-class  = "l3-hp-cos7";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos6 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8078>;
+		stats-class= "l3-wrr-cos6";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos5 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8077>;
+		stats-class= "l3-wrr-cos5";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos4 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8076>;
+		stats-class= "l3-wrr-cos4";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos3 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8075>;
+		stats-class= "l3-wrr-cos3";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos2 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8074>;
+		stats-class= "l3-wrr-cos2";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos1 {
+		weight = <500>;
+		overhead-bytes = <0>;
+		input-queues=<8073>;
+		stats-class= "l3-wrr-cos1";
+		drop-policy = "tail-drop-32kb";
+	};
+	be-cos0 {
+		byte-units;
+		low-priority = <0>;				/* lowest strict priority */
+		input-queues = <8072>;
+		stats-class  = "l3-be-cos0";
+		drop-policy = "tail-drop-32kb";
+	};
+};
+
+/****************************************************************/
+/* L2 shaper used by Linux/FastPath/Cascading flows at egress	*/
+/* eth0 interface												*/
+/* This sample shaper defines eitght classes of services: 		*/
+/* 	- one best effort (cos0), 									*/
+/*  - six weighted round robin of equial weight (cos1-cos6),	*/
+/*  - one high priority (cos7)									*/
+/****************************************************************/
+/* L2 shaper for eth0 */
+l2qostree0: l2-qos-tree-eth0 {
+	blended-scheduler;				/* Use both strict and round robin scheduling */
+	byte-units;						/* packet-units or byte-units */
+	output-rate = <31250000 25000>;	/* 31250000Bps = 250Mbps, 25kB of maximum accumulated credit */
+	overhead-bytes = <24>;			/* Byte adjustement for Ethernet preamble, delimiter, FCS, and Interpacket gap */
+
+	hp-cos7-eth0 {
+		byte-units;					/* packet-units or byte-units */
+		priority = <0>;
+		input-queues = <6407>;
+		stats-class  = "hp-cos7-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos6-eth0 {
+		weight = <500>;
+		input-queues=<6406>;
+		stats-class= "wrr-cos6-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos5-eth0 {
+		weight = <500>;
+		input-queues=<6405>;
+		stats-class= "wrr-cos5-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos4-eth0 {
+		weight = <500>;
+		input-queues=<6404>;
+		stats-class= "wrr-cos4-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos3-eth0 {
+		weight = <500>;
+		input-queues=<6403>;
+		stats-class= "wrr-cos3-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos2-eth0 {
+		weight = <500>;
+		input-queues=<6402>;
+		stats-class= "wrr-cos2-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos1-eth0 {
+		weight = <500>;
+		input-queues=<6401>;
+		stats-class= "wrr-cos1-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+	be-cos0-eth0 {
+		byte-units;						/* packet-units or byte-units */
+		low-priority = <0>;
+		input-queues = <6400>;
+		stats-class  = "be-cos0-eth0";
+		drop-policy = "tail-drop-32kb";
+	};
+};
+
+/****************************************************************/
+/* L2 shaper used by Linux/FastPath/Cascading flows at egress	*/
+/* eth1 interface			 									*/
+/* This sample shaper defines eitght classes of services: 		*/
+/* 	- one best effort (cos0), 									*/
+/*  - six weighted round robin of equial weight (cos1-cos6),	*/
+/*  - one high priority (cos7)									*/
+/****************************************************************/
+/* L2 shaper for eth1 */
+l2qostree1: l2-qos-tree-eth1 {
+	blended-scheduler;				/* Use both strict and round robin scheduling */
+	byte-units;						/* packet-units or byte-units */
+	output-rate = <31250000 25000>;	/* 31250000Bps = 250Mbps, 25kB of maximum accumulated credit */
+	overhead-bytes = <24>;			/* Byte adjustement for Ethernet preamble, delimiter, FCS, Interpacket gap */
+
+	hp-cos7-eth1 {
+		byte-units;					/* packet-units or byte-units */
+		priority = <0>;
+		input-queues = <6417>;
+		stats-class  = "hp-cos7-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos6-eth1 {
+		weight = <500>;
+		input-queues=<6416>;
+		stats-class= "wrr-cos6-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos5-eth1 {
+		weight = <500>;
+		input-queues=<6415>;
+		stats-class= "wrr-cos5-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos4-eth1 {
+		weight = <500>;
+		input-queues=<6414>;
+		stats-class= "wrr-cos4-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos3-eth1 {
+		weight = <500>;
+		input-queues=<6413>;
+		stats-class= "wrr-cos3-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos2-eth1 {
+		weight = <500>;
+		input-queues=<6412>;
+		stats-class= "wrr-cos2-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	wrr-cos1-eth1 {
+		weight = <500>;
+		input-queues=<6411>;
+		stats-class= "wrr-cos1-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+	be-cos0-eth1 {
+		byte-units;						/* packet-units or byte-units */
+		low-priority = <0>;
+		input-queues = <6410>;
+		stats-class  = "be-cos0-eth1";
+		drop-policy = "tail-drop-32kb";
+	};
+};

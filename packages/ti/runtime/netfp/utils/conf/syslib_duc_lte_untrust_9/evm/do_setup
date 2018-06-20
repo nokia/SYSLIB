@@ -1,0 +1,15 @@
+#!/bin/sh
+#Configuration script to setup test environment
+
+#Setup Source IP based routing test environment
+source ./conf/syslib_duc_lte_untrust_9/evm/do_srcrouting_setup
+
+#Setup IPSec related configuration files
+cp ./conf/common/caCert.der /etc/ipsec.d/cacerts/
+cp ./conf/common/evm/betaCert.der /etc/ipsec.d/certs/
+cp ./conf/common/evm/betaKey.der /etc/ipsec.d/private/
+cp ./conf/common/evm/ipsec.secrets /etc/
+cp ./conf/syslib_duc_lte_untrust_9/evm/ipsec.conf /etc/
+
+#Start the Strongswan IKEv2 daemon
+ipsec start
