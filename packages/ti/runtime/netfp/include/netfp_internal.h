@@ -1213,9 +1213,10 @@ typedef struct PaCommandSet
 */
 typedef struct NetfpNetHeaders
 {
-    uint8_t                            headerBuff[46/*ETHHDR_SIZE + VLANHDR_SIZE + IPHDR_SIZE + UDPHDR_SIZE*/];
+    uint8_t                            headerBuff[14 + 4 + 40 + 8 /*ETHHDR_SIZE + VLANHDR_SIZE + IPv6HDR_SIZE + UDPHDR_SIZE*/];
     uint32_t                           l2HeaderSize;
     uint32_t                           headerSize;
+    uint32_t                           partialChkSum;
 }NetfpNetHeaders;
 
 /**
@@ -1461,7 +1462,12 @@ typedef struct Netfp_SockTxMetaInfo_FZM
     uint32_t                    headerSize;
     Netfp_SockL2ConnectInfo*    l2ConnectInfo;
     uint8_t                     outerDSCP;
+    uint8_t                     innerDSCP;
     uint8_t                     l2CfgIndex;
+    uint8_t                     hwUDPChksum;
+    paTxChksum_t                udpHwChkSum;
+    uint8_t                     hwFragmentation;
+    uint8_t                     priority;
 }Netfp_SockTxMetaInfo_FZM;
 
 /**
@@ -3553,7 +3559,7 @@ extern int32_t Netfp_suspendSocket(Netfp_SockHandle sockHandle, Netfp_SockAddr* 
 extern int32_t Netfp_resumeSocket(Netfp_SockHandle sockHandle, Netfp_SockAddr* ptrSockAddr, int32_t* errCode);
 extern int32_t Netfp_resumeSecureSocket(Netfp_SockHandle sockHandle, Netfp_SockAddr* ptrSockAddr, Netfp_SrvSecChannelHandle secChHandle, int32_t* errCode);
 extern void Netfp_incNonSecureIPv4Stats(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo* ptrSockTxMetaInfo, Ti_Pkt* ptrPayload);
-extern void Netfp_incNonSecureIPv4Stats_FZM(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo_FZM* ptrSockTxMetaInfo, uint32_t packetLen);
+extern void Netfp_incNonSecureStats_FZM(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo_FZM* ptrSockTxMetaInfo, uint32_t packetLen);
 extern void Netfp_incSecureIPv4Stats(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo* ptrSockTxMetaInfo, Ti_Pkt* ptrPayload);
 extern void Netfp_incNonSecureIPv6Stats(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo* ptrSockTxMetaInfo, Ti_Pkt* ptrPayload);
 extern void Netfp_incSecureIPv6Stats(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo* ptrSockTxMetaInfo, Ti_Pkt* ptrPayload);

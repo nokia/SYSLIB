@@ -52,7 +52,6 @@
 #include <ti/runtime/msgcom/msgcom.h>
 #include <ti/runtime/resmgr/resmgr.h>
 #include <ti/runtime/netfp/netfp.h>
-#include <ti/runtime/uintc/uintc.h>
 #include <ti/runtime/josh/josh.h>
 
 /* Proxy private includes */
@@ -96,6 +95,8 @@ void* Osal_qmssCsEnter(void)
  */
 void Osal_qmssCsExit (void* key)
 {
+    (void) key;
+
     return;
 }
 
@@ -131,6 +132,8 @@ void* Osal_qmssMtCsEnter()
  */
 void Osal_qmssMtCsExit(void *key)
 {
+    (void) key;
+
     /* QMSS resources are accessed from the context of a single thread so this is
      * a dummy function. */
     return;
@@ -246,6 +249,8 @@ void* Osal_qmssAccCsEnter (void)
  */
 void Osal_qmssAccCsExit (void* csHandle)
 {
+    (void) csHandle;
+
     return;
 }
 
@@ -265,6 +270,9 @@ void Osal_qmssAccCsExit (void* csHandle)
  */
 void Osal_qmssBeginMemAccess (void *blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     return;
 }
 
@@ -284,6 +292,9 @@ void Osal_qmssBeginMemAccess (void *blockPtr, uint32_t size)
  */
 void  Osal_qmssEndMemAccess (void *blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     return;
 }
 
@@ -301,6 +312,8 @@ void  Osal_qmssEndMemAccess (void *blockPtr, uint32_t size)
  */
 void Osal_cppiCsEnter (uint32_t* key)
 {
+    (void) key;
+
     return;
 }
 
@@ -318,6 +331,8 @@ void Osal_cppiCsEnter (uint32_t* key)
  */
 void Osal_cppiCsExit (uint32_t key)
 {
+    (void) key;
+
     return;
 }
 
@@ -337,6 +352,9 @@ void Osal_cppiCsExit (uint32_t key)
  */
 void Osal_cppiBeginMemAccess (void *blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     return;
 }
 
@@ -356,6 +374,9 @@ void Osal_cppiBeginMemAccess (void *blockPtr, uint32_t size)
  */
 void Osal_cppiEndMemAccess (void* blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     return;
 }
 
@@ -398,6 +419,7 @@ Ptr Osal_cppiMalloc (uint32_t num_bytes)
 void Osal_cppiFree (Ptr ptr, uint32_t size)
 {
     free(ptr);
+    (void) size;
 }
 
 /**
@@ -434,6 +456,7 @@ void *Osal_rmMalloc (uint32_t numBytes)
 void Osal_rmFree (void* ptr, uint32_t numBytes)
 {
     free(ptr);
+    (void) numBytes;
 }
 
 /**
@@ -462,6 +485,8 @@ void *Osal_rmCsEnter(void)
  */
 void Osal_rmCsExit(void* csHandle)
 {
+    (void) csHandle;
+
     return;
 }
 
@@ -482,6 +507,9 @@ void Osal_rmCsExit(void* csHandle)
  */
 void Osal_rmBeginMemAccess(void *ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     return;
 }
 
@@ -502,6 +530,9 @@ void Osal_rmBeginMemAccess(void *ptr, uint32_t size)
  */
 void Osal_rmEndMemAccess(void *ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     return;
 }
 
@@ -530,6 +561,8 @@ void* Osal_rmTaskBlockCreate(void)
  */
 void Osal_rmTaskBlock(void *handle)
 {
+    (void) handle;
+
     return;
 }
 
@@ -544,6 +577,8 @@ void Osal_rmTaskBlock(void *handle)
  */
 void Osal_rmTaskUnblock(void *handle)
 {
+    (void) handle;
+
     return;
 }
 
@@ -558,6 +593,8 @@ void Osal_rmTaskUnblock(void *handle)
  */
 void Osal_rmTaskBlockDelete(void *handle)
 {
+    (void) handle;
+
     return;
 }
 
@@ -594,6 +631,8 @@ void Osal_rmLog (char *fmt, ... )
  */
 void* Pktlib_osalMalloc(Pktlib_MallocMode mode, uint32_t numBytes)
 {
+    (void) mode;
+
     return malloc (numBytes);
 }
 
@@ -615,6 +654,9 @@ void* Pktlib_osalMalloc(Pktlib_MallocMode mode, uint32_t numBytes)
  */
 void Pktlib_osalFree(Pktlib_MallocMode mode, void* ptr, uint32_t numBytes)
 {
+    (void) mode;
+    (void) numBytes;
+
     free(ptr);
 }
 
@@ -634,6 +676,9 @@ void Pktlib_osalFree(Pktlib_MallocMode mode, void* ptr, uint32_t numBytes)
  */
 void Pktlib_osalBeginMemAccess(void* ptr, uint32_t numBytes)
 {
+    (void) ptr;
+    (void) numBytes;
+
     /* Cache operations are not required on ARM */
     return;
 }
@@ -654,6 +699,9 @@ void Pktlib_osalBeginMemAccess(void* ptr, uint32_t numBytes)
  */
 void Pktlib_osalEndMemAccess(void* ptr, uint32_t numBytes)
 {
+    (void) ptr;
+    (void) numBytes;
+
     /* Cache operations are not required on ARM */
     return;
 }
@@ -675,6 +723,10 @@ void Pktlib_osalEndMemAccess(void* ptr, uint32_t numBytes)
  */
 void Pktlib_osalBeginPktAccess(Pktlib_HeapHandle heapHandle, Ti_Pkt* ptrPkt, uint32_t size)
 {
+    (void) heapHandle;
+    (void) ptrPkt;
+    (void) size;
+
     /* Cache operations are not required on ARM */
     return;
 }
@@ -696,6 +748,10 @@ void Pktlib_osalBeginPktAccess(Pktlib_HeapHandle heapHandle, Ti_Pkt* ptrPkt, uin
  */
 void Pktlib_osalEndPktAccess(Pktlib_HeapHandle heapHandle, void* ptrPkt, uint32_t size)
 {
+    (void) heapHandle;
+    (void) ptrPkt;
+    (void) size;
+
     /* Cache operations are not required on ARM */
     return;
 }
@@ -713,6 +769,8 @@ void Pktlib_osalEndPktAccess(Pktlib_HeapHandle heapHandle, void* ptrPkt, uint32_
  */
 void* Pktlib_osalEnterCS(Pktlib_HeapHandle heapHandle)
 {
+    (void) heapHandle;
+
     return NULL;
 }
 
@@ -731,6 +789,9 @@ void* Pktlib_osalEnterCS(Pktlib_HeapHandle heapHandle)
  */
 void Pktlib_osalExitCS(Pktlib_HeapHandle heapHandle, void* csHandle)
 {
+    (void) heapHandle;
+    (void) csHandle;
+
     return;
 }
 
@@ -766,6 +827,8 @@ void* Pktlib_osalPhyToVirt(void* ptrPhysicalAddress)
  */
 void Osal_nwalSetProcId (uint16_t core_id)
 {
+    (void) core_id;
+
     return;
 }
 
@@ -782,6 +845,8 @@ void Osal_nwalSetProcId (uint16_t core_id)
  */
 void Osal_setHplibSpinLockIfType(hplib_spinLock_Type if_type)
 {
+    (void) if_type;
+
     return;
 }
 
@@ -800,6 +865,8 @@ void Osal_setHplibSpinLockIfType(hplib_spinLock_Type if_type)
  */
 void* Resmgr_osalMalloc(Resmgr_MallocMode mode, uint32_t size)
 {
+    (void) mode;
+
     /* Ignore the mode parameter: On ARM Global allocations are not required. */
     return malloc(size);
 }
@@ -821,6 +888,9 @@ void* Resmgr_osalMalloc(Resmgr_MallocMode mode, uint32_t size)
  */
 void Resmgr_osalFree(Resmgr_MallocMode mode, void* ptr, uint32_t size)
 {
+    (void) mode;
+    (void) size;
+
     free (ptr);
 }
 
@@ -1016,6 +1086,9 @@ void Resmgr_osalDeleteSem (void* semHandle)
  */
 void Resmgr_osalBeginMemAccess (void* ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     /* Cache operations: This is not needed on ARM */
 }
 
@@ -1036,6 +1109,9 @@ void Resmgr_osalBeginMemAccess (void* ptr, uint32_t size)
  */
 void Resmgr_osalEndMemAccess (void* ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     /* Cache operations: This is not needed on ARM */
 }
 
@@ -1126,26 +1202,12 @@ int32_t Msgcom_osalRegisterIsr
     MsgCom_Interrupt*   ptrInterruptInfo
 )
 {
-    int32_t errCode;
+    (void) channelName;
+    (void) queueInfo;
+    (void) isr;
+    (void) chHandle;
+    (void) ptrInterruptInfo;
 
-    /* In the ARM realm system interrupt is never used. */
-    if (ptrInterruptInfo->sysInterrupt != -1)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Channel Name '%s' invalid configuration [System Interrupt %d].\n",
-                           channelName, ptrInterruptInfo->sysInterrupt);
-        return -1;
-    }
-
-    /* Debug Message: */
-    NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: Enabling GIC interrupt %d for channel '%s'\n", ptrInterruptInfo->hostInterrupt, channelName);
-
-    /* Use the UINTC module to register the ISR */
-    if (Uintc_registerIsr(gNetfpProxyMcb.uintcHandle, ptrInterruptInfo->hostInterrupt, (UintcIsrHandler)isr,
-                          chHandle, &errCode) < 0)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: UINTC Interrupt registeration for %d failed [Error code %d]\n", ptrInterruptInfo->hostInterrupt, errCode);
-        return -1;
-    }
     return 0;
 }
 
@@ -1174,26 +1236,10 @@ int32_t Msgcom_osalDeregisterIsr
     MsgCom_Interrupt*   ptrInterruptInfo
 )
 {
-    int32_t errCode;
+    (void) channelName;
+    (void) queueInfo;
+    (void) ptrInterruptInfo;
 
-    /* In the ARM realm system interrupt is never used. */
-    if (ptrInterruptInfo->sysInterrupt != -1)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Channel Name '%s' invalid configuration [System Interrupt %d].\n",
-                           channelName, ptrInterruptInfo->sysInterrupt);
-        return -1;
-    }
-
-    /* Debug Message: */
-    NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: Disabling GIC interrupt %d for channel '%s'\n", ptrInterruptInfo->hostInterrupt, channelName);
-
-    /* Use the UINTC module to deregister the ISR */
-    if (Uintc_deregisterIsr(gNetfpProxyMcb.uintcHandle, ptrInterruptInfo->hostInterrupt, &errCode) < 0)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: UINTC Interrupt deregisteration for %d failed [Error code %d]\n",
-                           ptrInterruptInfo->hostInterrupt, errCode);
-        return -1;
-    }
     return 0;
 }
 
@@ -1212,11 +1258,8 @@ int32_t Msgcom_osalDeregisterIsr
  */
 void Msgcom_osalDisableSysInt(int32_t cpIntcId, int32_t sysIntr)
 {
-    int32_t errCode;
-
-    /* Use the UINTC module to disable the event */
-    if (Uintc_disableEvent(gNetfpProxyMcb.uintcHandle, sysIntr, &errCode) < 0)
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Disabling the UINTC event failed [Error code %d]\n", errCode);
+    (void) cpIntcId;
+    (void) sysIntr;
 }
 
 /**
@@ -1234,11 +1277,8 @@ void Msgcom_osalDisableSysInt(int32_t cpIntcId, int32_t sysIntr)
  */
 void Msgcom_osalEnableSysInt(int32_t cpIntcId, int32_t sysIntr)
 {
-    int32_t errCode;
-
-    /* Use the UINTC module to enable the event */
-    if (Uintc_enableEvent(gNetfpProxyMcb.uintcHandle, sysIntr, &errCode) < 0)
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Enabling the UINTC event failed [Error code %d]\n", errCode);
+    (void) cpIntcId;
+    (void) sysIntr;
 }
 
 /**
@@ -1269,6 +1309,8 @@ void* Msgcom_osalEnterSingleCoreCS(void)
  */
 void Msgcom_osalExitSingleCoreCS(void* csHandle)
 {
+    (void) csHandle;
+
     return;
 }
 
@@ -1391,6 +1433,8 @@ void* Netfp_osalMalloc (uint32_t size, uint32_t alignment)
  */
 void Netfp_osalFree (void* ptr, uint32_t size)
 {
+    (void) size;
+
     free(ptr);
 }
 
@@ -1467,6 +1511,9 @@ void Netfp_osalExitSingleCoreCriticalSection (void* csHandle)
  */
 void Netfp_osalBeginMemoryAccess (void* ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     /* There is no need to perform cache operations on ARM */
 }
 
@@ -1486,6 +1533,9 @@ void Netfp_osalBeginMemoryAccess (void* ptr, uint32_t size)
  */
 void Netfp_osalEndMemoryAccess (void* ptr, uint32_t size)
 {
+    (void) ptr;
+    (void) size;
+
     /* There is no need to perform cache operations on ARM */
 }
 
@@ -1609,6 +1659,9 @@ void Osal_paBeginMemAccess (Ptr addr, uint32_t size)
  */
 void Osal_paEndMemAccess (Ptr addr, uint32_t size)
 {
+    (void) addr;
+    (void) size;
+
     /* There is no need to perform cache operations on ARM */
     return;
 }
@@ -1627,6 +1680,8 @@ void Osal_paEndMemAccess (Ptr addr, uint32_t size)
  */
 void Osal_paMtCsEnter (uint32_t *key)
 {
+    (void) key;
+
     /* NETFP Server: All the PA resources are accessed from a single thread */
     return;
 }
@@ -1645,6 +1700,8 @@ void Osal_paMtCsEnter (uint32_t *key)
  */
 void Osal_paMtCsExit (uint32_t key)
 {
+    (void) key;
+
     /* NETFP Server: All the PA resources are accessed from a single thread */
     return;
 }
@@ -1733,6 +1790,8 @@ void Osal_saEndScAccess   (void* addr, uint32_t size)
  */
 void Osal_saCsEnter (uint32_t* key)
 {
+    (void) key;
+
     /* The NETFP server accesses all the SA LLD resources from a single thread. Hence there
      * is no need for a critical section. */
     return;
@@ -1752,6 +1811,8 @@ void Osal_saCsEnter (uint32_t* key)
  */
 void Osal_saCsExit (uint32_t key)
 {
+    (void) key;
+
     /* The NETFP server accesses all the SA LLD resources from a single thread. Hence there
      * is no need for a critical section. */
     return;
@@ -1771,6 +1832,8 @@ void Osal_saCsExit (uint32_t key)
  */
 void Osal_saMtCsEnter (uint32_t *key)
 {
+    (void) key;
+
     /* The NETFP server accesses all the SA LLD resources from a single thread. Hence there
      * is no need for a critical section. */
     return;
@@ -1790,6 +1853,8 @@ void Osal_saMtCsEnter (uint32_t *key)
  */
 void Osal_saMtCsExit (uint32_t key)
 {
+    (void) key;
+
     /* The NETFP server accesses all the SA LLD resources from a single thread. Hence there
      * is no need for a critical section. */
     return;
@@ -1810,6 +1875,9 @@ void Osal_saMtCsExit (uint32_t key)
  */
 void Osal_saBeginMemAccess (void *blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     /* There is no need to perform cache operations on ARM */
     return;
 }
@@ -1829,6 +1897,9 @@ void Osal_saBeginMemAccess (void *blockPtr, uint32_t size)
  */
 void Osal_saEndMemAccess (void *blockPtr, uint32_t size)
 {
+    (void) blockPtr;
+    (void) size;
+
     /* There is no need to perform cache operations on ARM */
     return;
 }

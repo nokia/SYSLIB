@@ -57,7 +57,6 @@ extern "C" {
 
 /* SYSLIB Include Files. */
 #include <ti/runtime/msgcom/msgcom.h>
-#include <ti/runtime/uintc/uintc.h>
 #include <ti/runtime/pktlib/pktlib.h>
 #include <ti/runtime/resmgr/resmgr.h>
 #include <ti/runtime/netfp/netfp.h>
@@ -116,7 +115,7 @@ extern "C" {
 #define NETMGR_NUD_RESET        0
 
 /** Neighbor cache states recognized by Network manager */
-#define NETMGR_NUD_VALID        (NUD_REACHABLE|NUD_PROBE|NUD_STALE|NUD_DELAY)
+#define NETMGR_NUD_VALID        (NUD_REACHABLE|NUD_PROBE|NUD_STALE|NUD_DELAY|NUD_PERMANENT)
 
 /**********************************************************************
  ************************** Enums *************************************
@@ -243,11 +242,6 @@ typedef struct NetfpProxy_MCB
     Resmgr_ResourceCfg          appResourceConfig;
 
     /**
-     * @brief UINTC handle
-     */
-    UintcHandle                 uintcHandle;
-
-    /**
      * @brief MSGCOM Instance handle.
      */
     Msgcom_InstHandle           msgcomInstHandle;
@@ -256,11 +250,6 @@ typedef struct NetfpProxy_MCB
      * @brief PKTLIB Instance handle.
      */
     Pktlib_InstHandle           pktlibInstHandle;
-
-    /**
-     * @brief UINTC Thread
-     */
-    pthread_t                   uintcThread;
 
     /**
      * @brief NETFP Client Thread

@@ -55,6 +55,14 @@
 #include <ti/runtime/name/name.h>
 #include <ti/runtime/name/name_db.h>
 
+#ifdef __GNUC__
+    #define likely(x)       __builtin_expect(!!(x), 1)
+    #define unlikely(x)     __builtin_expect(!!(x), 0)
+#else
+    #define likely(x)       (x)
+    #define unlikely(x)     (x)
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -1028,28 +1036,26 @@ extern void* Osal_qmssVirtToPhy (void *ptr);
  */
 static inline void* Pktlib_mVMConvertDescVirtToPhy(void *descAddr)
 {
-    if (!descAddr)
+    if (unlikely(!descAddr))
         return NULL;
 
     Cppi_HostDesc *nextBDPtr = (Cppi_HostDesc *)QMSS_DESC_PTR(descAddr);
     Cppi_HostDesc *prevBDPtr = NULL;
     while (nextBDPtr)
     {
-        void *buffPtr = NULL;
-        if (nextBDPtr->buffPtr)
+        if (likely(nextBDPtr->buffPtr))
         {
-            buffPtr = (void *)nextBDPtr->buffPtr;
-            nextBDPtr->buffPtr = (uint32_t)Osal_qmssVirtToPhy((void *)(buffPtr));
+            nextBDPtr->buffPtr = (uint32_t)Osal_qmssVirtToPhy((void *)(nextBDPtr->buffPtr));
 
-            if (!(nextBDPtr->buffPtr))
+            if (unlikely(!(nextBDPtr->buffPtr)))
                 return NULL;
         }
 
-        if (nextBDPtr->origBuffPtr)
+        if (likely(nextBDPtr->origBuffPtr))
         {
             nextBDPtr->origBuffPtr = (uint32_t)Osal_qmssVirtToPhy((void *)(nextBDPtr->origBuffPtr));
 
-            if (!(nextBDPtr->origBuffPtr))
+            if (unlikely(!(nextBDPtr->origBuffPtr)))
                 return NULL;
         }
 
@@ -1059,14 +1065,11 @@ static inline void* Pktlib_mVMConvertDescVirtToPhy(void *descAddr)
         {
             prevBDPtr->nextBDPtr = (uint32_t)Osal_qmssVirtToPhy((void *)(prevBDPtr->nextBDPtr));
 
-            if (!(prevBDPtr->nextBDPtr))
+            if (unlikely(!(prevBDPtr->nextBDPtr)))
                 return NULL;
         }
     }
     descAddr = Osal_qmssVirtToPhy(descAddr);
-
-    if (!descAddr)
-        return NULL;
 
     /* Issue memory barrier */
     __asm__ __volatile__ ("dsb st" : : : "memory");
@@ -1087,7 +1090,7 @@ static inline void* Pktlib_mVMConvertDescVirtToPhy(void *descAddr)
  */
 static inline void* Pktlib_mVMConvertDescPhyToVirt(void *descAddr)
 {
-    if (!descAddr)
+    if (unlikely(!descAddr))
         return NULL;
 
     descAddr = Osal_qmssPhyToVirt(descAddr);
@@ -1095,19 +1098,19 @@ static inline void* Pktlib_mVMConvertDescPhyToVirt(void *descAddr)
     Cppi_HostDesc *nextBDPtr = (Cppi_HostDesc *)QMSS_DESC_PTR(descAddr);
     while (nextBDPtr)
     {
-        if (nextBDPtr->buffPtr)
+        if (likely(nextBDPtr->buffPtr))
         {
             nextBDPtr->buffPtr = (uint32_t)Osal_qmssPhyToVirt((void *)(nextBDPtr->buffPtr));
 
-            if (!(nextBDPtr->buffPtr))
+            if (unlikely(!(nextBDPtr->buffPtr)))
                 return NULL;
         }
 
-        if (nextBDPtr->origBuffPtr)
+        if (likely(nextBDPtr->origBuffPtr))
         {
             nextBDPtr->origBuffPtr = (uint32_t)Osal_qmssPhyToVirt((void *)(nextBDPtr->origBuffPtr));
 
-            if (!(nextBDPtr->origBuffPtr))
+            if (unlikely(!(nextBDPtr->origBuffPtr)))
                 return NULL;
         }
 
@@ -1115,7 +1118,7 @@ static inline void* Pktlib_mVMConvertDescPhyToVirt(void *descAddr)
         {
             nextBDPtr->nextBDPtr = (uint32_t)Osal_qmssPhyToVirt((void *)(nextBDPtr->nextBDPtr));
 
-            if (!(nextBDPtr->nextBDPtr))
+            if (unlikely(!(nextBDPtr->nextBDPtr)))
                 return NULL;
         }
 

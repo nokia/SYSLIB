@@ -2077,6 +2077,8 @@ static int32_t Netfp_completeReassembly
 //fzm-->
         if(ptrReassemblyMCB->cfg.largePacketPushToSocket)
         {
+            Pktlib_getDataBuffer(ptrReassembledPacket, &ptrDataBuffer, &dataBufferLen);
+
             Netfp_IPAddr netfpAddr;
             uint16_t sin_port;
             int forwardToLinux = 1;

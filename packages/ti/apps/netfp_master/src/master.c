@@ -86,7 +86,6 @@
 /* SYSLIB Include Files */
 #include <ti/runtime/pktlib/pktlib.h>
 #include <ti/runtime/netfp/netfp.h>
-#include <ti/runtime/uintc/uintc.h>
 #include <ti/runtime/name/name.h>
 #include <ti/runtime/name/name_db.h>
 #include <ti/runtime/name/name_proxyClient.h>
@@ -1746,34 +1745,34 @@ static void NetfpMaster_displayInfo (int sig, siginfo_t *siginfo, void *context)
     {
         /* Display the NETCP Statistics: */
         NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "**********************************************************\n");
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of packets:             %d\n", paStats.classify1.nPackets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IPv4 packets:           %d\n", paStats.classify1.nIpv4Packets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number Inner IPv4 packets:     %d\n", paStats.classify1.nIpv4PacketsInner);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IPv6 packets:           %d\n", paStats.classify1.nIpv6Packets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number Inner IPv6 packets:     %d\n", paStats.classify1.nIpv6PacketsInner);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number custom packets:         %d\n", paStats.classify1.nCustomPackets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number SRIO packets :          %d\n", paStats.classify1.nSrioPackets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number llc/snap fail:          %d\n", paStats.classify1.nLlcSnapFail);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number table matched:          %d\n", paStats.classify1.nTableMatch);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number failed table matched:   %d\n", paStats.classify1.nNoTableMatch);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IP frags:               %d\n", paStats.classify1.nIpFrag);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IP depth overflow:      %d\n", paStats.classify1.nIpDepthOverflow);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number vlan depth overflow:    %d\n", paStats.classify1.nVlanDepthOverflow);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number gre depth overflow:     %d\n", paStats.classify1.nGreDepthOverflow);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number mpls packets:           %d\n", paStats.classify1.nMplsPackets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of parse fail:          %d\n", paStats.classify1.nParseFail);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number invalid IPv6 opts:      %d\n", paStats.classify1.nInvalidIPv6Opt);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of silent discard:      %d\n", paStats.classify1.nSilentDiscard);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of invalid control:     %d\n", paStats.classify1.nInvalidControl);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of invalid states:      %d\n", paStats.classify1.nInvalidState);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of system fails:        %d\n", paStats.classify1.nSystemFail);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of packets:             %d\n", paStats.classify2.nPackets);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of UDP packets:         %d\n", paStats.classify2.nUdp);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of TCP packets:         %d\n", paStats.classify2.nTcp);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of custom packets:      %d\n", paStats.classify2.nCustom);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of silent discard:      %d\n", paStats.classify2.nSilentDiscard);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of invalid control:     %d\n", paStats.classify2.nInvalidControl);
-        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "Modify number of command file:    %d\n", paStats.modify.nCommandFail);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of packets:             %"PRIu32"\n", paStats.classify1.nPackets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IPv4 packets:           %"PRIu32"\n", paStats.classify1.nIpv4Packets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number Inner IPv4 packets:     %"PRIu32"\n", paStats.classify1.nIpv4PacketsInner);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IPv6 packets:           %"PRIu32"\n", paStats.classify1.nIpv6Packets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number Inner IPv6 packets:     %"PRIu32"\n", paStats.classify1.nIpv6PacketsInner);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number custom packets:         %"PRIu32"\n", paStats.classify1.nCustomPackets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number SRIO packets :          %"PRIu32"\n", paStats.classify1.nSrioPackets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number llc/snap fail:          %"PRIu32"\n", paStats.classify1.nLlcSnapFail);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number table matched:          %"PRIu32"\n", paStats.classify1.nTableMatch);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number failed table matched:   %"PRIu32"\n", paStats.classify1.nNoTableMatch);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IP frags:               %"PRIu32"\n", paStats.classify1.nIpFrag);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number IP depth overflow:      %"PRIu32"\n", paStats.classify1.nIpDepthOverflow);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number vlan depth overflow:    %"PRIu32"\n", paStats.classify1.nVlanDepthOverflow);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number gre depth overflow:     %"PRIu32"\n", paStats.classify1.nGreDepthOverflow);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number mpls packets:           %"PRIu32"\n", paStats.classify1.nMplsPackets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of parse fail:          %"PRIu32"\n", paStats.classify1.nParseFail);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number invalid IPv6 opts:      %"PRIu32"\n", paStats.classify1.nInvalidIPv6Opt);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of silent discard:      %"PRIu32"\n", paStats.classify1.nSilentDiscard);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of invalid control:     %"PRIu32"\n", paStats.classify1.nInvalidControl);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of invalid states:      %"PRIu32"\n", paStats.classify1.nInvalidState);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C1 number of system fails:        %"PRIu32"\n", paStats.classify1.nSystemFail);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of packets:             %"PRIu32"\n", paStats.classify2.nPackets);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of UDP packets:         %"PRIu32"\n", paStats.classify2.nUdp);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of TCP packets:         %"PRIu32"\n", paStats.classify2.nTcp);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of custom packets:      %"PRIu32"\n", paStats.classify2.nCustom);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of silent discard:      %"PRIu32"\n", paStats.classify2.nSilentDiscard);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "C2 number of invalid control:     %"PRIu32"\n", paStats.classify2.nInvalidControl);
+        NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "Modify number of command file:    %"PRIu32"\n", paStats.modify.nCommandFail);
     }
     /* fzm - This string is appended at the end of the log to enable collection with FPControl app */
     NetfpMaster_dump(NetfpMaster_LogLevel_INFO, "*******************************************</netfp_master_dump>\n");
@@ -1974,13 +1973,10 @@ static void* NetfpMaster_thread(void *arg)
     fd_set                          fds;
     int32_t                         maxFd;
     int32_t                         errCode;
-    struct timeval                  timeout;
-    struct timeval*                 ptrTimeout;
     Netfp_ReassemblyConfig          reassemblyCfg;
     Netfp_PreClassificationCfg      preClassificationCfg;
     Netfp_DefaultReassemblyMgmtCfg  defaultReassemblyCfg;
     NetfpMaster_IfBlock*            ptrNetfpIfBlock;
-    int32_t                         value;
 
     /********************************************************************************************
      * Initialize and setup the management interface:
@@ -1997,7 +1993,6 @@ static void* NetfpMaster_thread(void *arg)
     if (gNetfpMasterMCB.reassemblyHandling == 1)
     {
         /* YES. Determine the maximum descriptor from the managment socket, inner & outer channels. */
-        maxFd = max (gNetfpMasterMCB.uintcFdOuterIPChannel, gNetfpMasterMCB.uintcFdInnerIPChannel);
         maxFd = max (maxFd, gNetfpMasterMCB.masterMgmtSocket);
         maxFd = max (maxFd, gNetfpMasterMCB.signalPipe[0]);
     }
@@ -2213,26 +2208,8 @@ static void* NetfpMaster_thread(void *arg)
         FD_SET (gNetfpMasterMCB.masterMgmtSocket, &fds);
         FD_SET (gNetfpMasterMCB.signalPipe[0],    &fds);
 
-        /* Is the NETFP Master responsible for reassembly? */
-        if (gNetfpMasterMCB.reassemblyHandling == 1)
-        {
-            /* YES. We need to wait for messages on the inner and outer reassembly channels also. */
-            FD_SET (gNetfpMasterMCB.uintcFdOuterIPChannel, &fds);
-            FD_SET (gNetfpMasterMCB.uintcFdInnerIPChannel, &fds);
-
-            /* Configure the timeout: This is used to handle the reassembly timeouts. */
-            timeout.tv_sec  = gNetfpMasterMCB.reassemblyTimeout;
-            timeout.tv_usec = 0;
-            ptrTimeout      = &timeout;
-        }
-        else
-        {
-            /* NO. There is no need to have a timeout. */
-            ptrTimeout = NULL;
-        }
-
         /* Wait for the data to arrive */
-        errCode = select (maxFd + 1, &fds, NULL, NULL, ptrTimeout);
+        errCode = select (maxFd + 1, &fds, NULL, NULL, NULL);
         if (errCode < 0)
         {
             NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: NETFP master select failed [Error: %s]\n", strerror(errno));
@@ -2257,136 +2234,12 @@ static void* NetfpMaster_thread(void *arg)
         /* Did we get a management message? */
         if (FD_ISSET(gNetfpMasterMCB.masterMgmtSocket, &fds) != 0)
             NetfpMaster_processMgmt(&gNetfpMasterMCB);
-
-        /* Is the NETFP Master responsible for handling the reassembly? */
-        if (gNetfpMasterMCB.reassemblyHandling == 0)
-            continue;
-
-        /* NETFP Master Reassembly: Did we get a message on the outer IP reassembly channel? */
-        if (FD_ISSET(gNetfpMasterMCB.uintcFdOuterIPChannel, &fds) != 0)
-        {
-            /* Read from the DSP interrupt file descriptor.
-             *  - This is required else the select will not block. */
-            if (read(gNetfpMasterMCB.uintcFdOuterIPChannel, &value, sizeof(uint32_t)) != sizeof(uint32_t))
-            {
-                NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: NETFP master UIO read failed [Error: %s]\n", strerror(errno));
-                break;
-            }
-
-            /* Since we are executing the UINTC in application managed mode; we are responsible for
-             * invoking the MSGCOM channel receive handler. */
-            Msgcom_channelRxHandler (gNetfpMasterMCB.outerIPChannel);
-
-            /* Execute the reassembly module */
-            if (Netfp_reassembly (gNetfpMasterMCB.netfpClientHandle, &errCode) < 0)
-                NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: NETFP OuterIP reassembly failed [Error %d]\n", errCode);
-        }
-
-        /* NETFP Master Reassembly: Did we get a message on the inner IP reassembly channel? */
-        if (FD_ISSET(gNetfpMasterMCB.uintcFdInnerIPChannel, &fds) != 0)
-        {
-            /* Read from the DSP interrupt file descriptor.
-             *  - This is required else the select will not block. */
-            if (read(gNetfpMasterMCB.uintcFdInnerIPChannel, &value, sizeof(uint32_t)) != sizeof(uint32_t))
-            {
-                NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: NETFP master UIO read failed [Error: %s]\n", strerror(errno));
-                break;
-            }
-
-            /* Since we are executing the UINTC in application managed mode; we are responsible for
-             * invoking the MSGCOM channel receive handler. */
-            Msgcom_channelRxHandler (gNetfpMasterMCB.innerIPChannel);
-
-            /* Execute the reassembly module */
-            if (Netfp_reassembly (gNetfpMasterMCB.netfpClientHandle, &errCode) < 0)
-                NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: NETFP InnerIP reassembly failed [Error %d]\n", errCode);
-        }
     }
 
     /* NETFP Master thread has been terminated; shutting down... */
     NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: NETFP master thread terminated\n");
     return NULL;
 }
-
-#if 0 //https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5915.aspx
-/**
- *  @b Description
- *  @n
- *      The thread provides an execution context for the internal NETFP server
- *      to execute
- *
- *  @param[in]  arg
- *      Argument passed to the thread.
- *
- *  @retval
- *      Not Applicable.
- */
-static void* NetfpMaster_netfpServerThread(void *arg)
-{
-    int32_t             errCode;
-    int32_t             retVal;
-    int32_t             numClientsServiced;
-    struct sched_param  param;
-
-    /* Set the configured policy and priority */
-    param.sched_priority = NETFP_MASTER_UINTC_SCHED_PRIORITY;
-    errCode = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-    if (errCode != 0)
-    {
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to set the UINTC thread priority & policy [Error Code %d]\n", errCode);
-        return NULL;
-    }
-
-    /* Debug Message: */
-    NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: NETFP Server UINTC execution thread started\n");
-
-    /* The thread provides an execution context for the NETFP server and UINTC managed dispatcher. */
-    while (1)
-    {
-        /* Wait for an interrupt to be received. */
-        retVal = Uintc_select (gNetfpMasterMCB.uintcManagedHandle, NULL, &errCode);
-        if (retVal < 0)
-        {
-            /* Error: UINTC select failed. Has the UINTC module been deinitialized? */
-            if (errCode == UINTC_EDEINIT)
-                break;
-
-            /* Error: UINTC select failed */
-            NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: UINTC select failed [Error code %d]\n", errCode);
-            return NULL;
-        }
-
-        /* UINTC Managed module received an interrupt: Determine if the NETFP server needs to process any requests */
-        while (1)
-        {
-            numClientsServiced = Netfp_executeServer (gNetfpMasterMCB.netfpServerHandle);
-            if (numClientsServiced == 0)
-                break;
-        }
-    }
-    return NULL;
-}
-
-/**
- *  @b Description
- *  @n
- *      The thread provides an execution context for the internal NETFP client
- *      to execute
- *
- *  @param[in]  arg
- *      Argument passed to the thread.
- *
- *  @retval
- *      Not Applicable.
- */
-static void* NetfpMaster_netfpClientThread(void *arg)
-{
-    /* Execute the NETFP client */
-    while (1)
-        Netfp_executeClient (gNetfpMasterMCB.netfpClientHandle);
-    return NULL;
-}
-#endif
 
 /**
  *  @b Description
@@ -2474,7 +2327,6 @@ static void* NetfpMaster_initThread(void *arg)
     Name_DatabaseCfg            databaseCfg;
     Pktlib_InstCfg              pktlibInstCfg;
     Msgcom_InstCfg              msgcomInstCfg;
-    UintcConfig                 uintcConfig;
     pthread_t                   masterThread;
 #if 0 //https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5915.aspx
     pthread_t                   netfpServerThread;
@@ -2639,49 +2491,6 @@ static void* NetfpMaster_initThread(void *arg)
         return NULL;
     }
 
-    /********************************************************************************************
-     * Initialize the UINTC module
-     * - Application managed module is created for handling the Reassembly channels
-     * - UINTC managed module is created for handling the NETFP server & clients.
-     ********************************************************************************************/
-
-    /* Initialize and populate the user space interrupt configuration */
-    memset ((void *)&uintcConfig, 0, sizeof(UintcConfig));
-
-    /* Populate the user space interrupt configuration:
-     * - We are operating the UINTC module in the application managed mode. */
-    strcpy(uintcConfig.name, "NETFP_MasterAppManaged");
-    uintcConfig.mode = Uintc_Mode_APPLICATION_MANAGED;
-
-    /* Initialize the UINTC module. */
-    gNetfpMasterMCB.appManagedHandle = Uintc_init (&uintcConfig, &errCode);
-    if (gNetfpMasterMCB.appManagedHandle == NULL)
-    {
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to open the UINTC module [Error code %d]\n", errCode);
-        return NULL;
-    }
-    NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: UINTC application managed module %p has been opened successfully\n",
-                    gNetfpMasterMCB.appManagedHandle);
-
-#if 0 //https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5915.aspx
-
-    /* Initialize and populate the user space interrupt configuration */
-    memset ((void *)&uintcConfig, 0, sizeof(UintcConfig));
-
-    /* Populate the user space interrupt configuration:
-     * - We are operating the UINTC module in the UINTC managed mode. */
-    strcpy(uintcConfig.name, "NETFP_MasterUINTCManaged");
-    uintcConfig.mode = Uintc_Mode_UINTC_MANAGED;
-
-    /* Initialize the UINTC module. */
-    gNetfpMasterMCB.uintcManagedHandle = Uintc_init (&uintcConfig, &errCode);
-    if (gNetfpMasterMCB.uintcManagedHandle == NULL)
-    {
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to open the UINTC module [Error code %d]\n", errCode);
-        return NULL;
-    }
-    NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: UINTC managed module 0x%x has been opened successfully\n", gNetfpMasterMCB.uintcManagedHandle);
-#endif
     /********************************************************************************************
      * Request resources:
      ********************************************************************************************/
@@ -3176,20 +2985,6 @@ static void* NetfpMaster_initThread(void *arg)
             NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: NETFP Master heap deleted successfully\n");
     }
 #endif //fzm
-
-    /* Shutdown the UINTC application managed module */
-    if (Uintc_deinit (gNetfpMasterMCB.appManagedHandle, &errCode) < 0)
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to deinitialize the UINTC-Application Managed [Error code %d]\n", errCode);
-    else
-        NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: Successfully deinitialized the UINTC-Application Managed\n");
-
-#if 0 //https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5915.aspx
-    /* Shutdown the UINTC managed module */
-    if (Uintc_deinit (gNetfpMasterMCB.uintcManagedHandle, &errCode) < 0)
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to deinitialize the UINTC-Managed [Error code %d]\n", errCode);
-    else
-        NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Debug: Successfully deinitialized the UINTC-Managed\n");
-#endif
 
 #if 0 //fzm: https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5791.aspx
     /* Shutdown the eQoS module */

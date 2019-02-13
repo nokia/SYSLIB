@@ -608,58 +608,6 @@ static void NetfpProxy_coreDataFree(uint8_t* ptr, uint32_t size, uint32_t arg)
 /**
  *  @b Description
  *  @n
- *      NETFP Proxy UINTC thread which is woken up on the reception of
- *      an interrupt. ISR are executed in this thread context.
- *
- *  @param[in]  arg
- *      Argument passed to the thread.
- *
- *  @retval
- *      Not Applicable.
- */
-static void* NetfpProxy_coreExecuteUINTC(void *arg)
-{
-    int32_t             errCode;
-    int32_t             retVal;
-    struct sched_param  param;
-
-    /* Set the configured policy and priority */
-    param.sched_priority = NETFP_PROXY_UINTC_SCHED_PRIORITY; //fzm
-    errCode = pthread_setschedparam(pthread_self(), SCHED_FIFO, &param);
-    if (errCode != 0)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Unable to set the UINTC thread priority & policy [Error Code %d]\n", errCode);
-        return NULL;
-    }
-
-    /* Debug Message: */
-    NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: Launched the UINTC Thread\n");
-
-    /* Loop around: The UINTC thread is waiting for an interrupt to arrive on events which have been registered
-     * with the UINTC instance. */
-    while (1)
-    {
-        /* Dispatch received events to the appropriate handler. */
-        retVal = Uintc_select (gNetfpProxyMcb.uintcHandle, NULL, &errCode);
-        if (retVal < 0)
-        {
-            /* Error: UINTC select failed. Has the UINTC module been deinitialized? */
-            if (errCode == UINTC_EDEINIT)
-                break;
-
-            /* Report the UINTC Module error: */
-            NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: UINTC select failed [Error code %d]\n", errCode);
-            NetfpProxy_assertCriticalError(errCode, __func__, __LINE__); //fzm
-
-            return NULL;
-        }
-    }
-    return NULL;
-}
-
-/**
- *  @b Description
- *  @n
  *      This is the NETFP Client Thread which needs to execute in the background
  *      and is used to communicate and exchange messages with the NETFP Server
  *
@@ -999,7 +947,6 @@ static int32_t NetfpProxy_coreInitNetFP (void)
     Resmgr_SystemCfg            sysConfig;
     Resmgr_ResourceCfg*         ptrResCfg;
     Netfp_ClientConfig          clientConfig;
-    UintcConfig                 uintcConfig;
     int32_t                     clientStatus;
     Pktlib_InstCfg              pktlibInstCfg;
     Msgcom_InstCfg              msgcomInstCfg;
@@ -1137,20 +1084,6 @@ static int32_t NetfpProxy_coreInitNetFP (void)
         NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: MSGCOM Instance creation failed [Error code %d]\n", errCode);
         goto cleanup_return_error;
     }
-
-    /* Initialize and populate the user space interrupt configuration */
-    memset ((void *)&uintcConfig, 0, sizeof(UintcConfig));
-
-    /* Populate the user space interrupt configuration: */
-    strncpy(uintcConfig.name, gNetfpProxyMcb.netfpClientName, sizeof(uintcConfig.name)-1);
-    uintcConfig.mode           = Uintc_Mode_UINTC_MANAGED;
-    gNetfpProxyMcb.uintcHandle = Uintc_init (&uintcConfig, &errCode);
-    if (gNetfpProxyMcb.uintcHandle == NULL)
-    {
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Unable to open the UINTC module\n");
-        goto cleanup_return_error;
-    }
-    NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: UINTC module has been opened successfully.\n");
 
     /* Initialize the heap configuration. */
     memset ((void *)&heapCfg, 0, sizeof(Pktlib_HeapCfg));
@@ -1300,10 +1233,6 @@ cleanup_return_error:
     if (gNetfpProxyMcb.netfpClientHandle)
         Netfp_deleteClient (gNetfpProxyMcb.netfpClientHandle, &errCode);
 
-    /* Deinit the UINTC instance */
-    if (gNetfpProxyMcb.uintcHandle)
-        Uintc_deinit (gNetfpProxyMcb.uintcHandle, &errCode);
-
     /* Deinit Msgcom instance */
     if (gNetfpProxyMcb.msgcomInstHandle)
         Msgcom_deleteInstance (gNetfpProxyMcb.msgcomInstHandle, &errCode);
@@ -1348,19 +1277,14 @@ static void NetfpProxy_coreShutDown (void)
     /* Stop and delete the NetFP client */
     Netfp_stopClient (gNetfpProxyMcb.netfpClientHandle, &errCode);
 
-    /* Kill the NetFP, UINTC threads */
+    /* Kill the NetFP threads */
     pthread_cancel (gNetfpProxyMcb.netfpProxyThread);
     pthread_cancel (gNetfpProxyMcb.netfpClientThread);
-    pthread_cancel (gNetfpProxyMcb.uintcThread);
 
     Netfp_deleteClient (gNetfpProxyMcb.netfpClientHandle, &errCode);
 
     pthread_join (gNetfpProxyMcb.netfpProxyThread, NULL);
     pthread_join (gNetfpProxyMcb.netfpClientThread, NULL);
-    pthread_join (gNetfpProxyMcb.uintcThread, NULL);
-
-    /* Deinit the UINTC instance */
-    Uintc_deinit (gNetfpProxyMcb.uintcHandle, &errCode);
 
 //fzm ---> https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/5791.aspx
     /* Deinitialize and Route module */
@@ -1491,17 +1415,9 @@ int32_t main (int argc, char* argv[])
 
     /*********************************************************************************************
      * Launch the threads:
-     *  - NETFP Client & UINTC Thread should be operational before the PLUGIN is loaded because
+     *  - NETFP Client Thread should be operational before the PLUGIN is loaded because
      *    the plugin could invoke NETFP API.
      *********************************************************************************************/
-    retVal = pthread_create (&gNetfpProxyMcb.uintcThread, NULL, NetfpProxy_coreExecuteUINTC, NULL);
-    if (retVal < 0)
-    {
-        /* Clean up and exit */
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: UINTC thread create failed error code %d\n", retVal);
-        NetfpProxy_coreShutDown ();
-        return -1;
-    }
     retVal = pthread_create (&gNetfpProxyMcb.netfpClientThread, NULL, NetfpProxy_coreExecuteNETFPClient, gNetfpProxyMcb.netfpClientHandle);
     if (retVal < 0)
     {

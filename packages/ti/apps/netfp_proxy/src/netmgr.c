@@ -852,7 +852,7 @@ static void netmgr_receive_neigh_updates (struct nl_cache* cache, struct nl_obje
  *
  * API that checks if the given Neighbor cache entry is in a valid
  * state that the application can use. The only supported valid
- * states are: NUD_REACHABLE, NUD_PROBE, NUD_STALE, NUD_DELAY.
+ * states are: NUD_REACHABLE, NUD_PROBE, NUD_STALE, NUD_DELAY, NUD_PERMANENT.
  * A neighbor cache entry that is in any of the above mentioned
  * states is considered valid, since it will have a MAC address
  * associated with it that the application can use to reach it.
@@ -1727,7 +1727,6 @@ int32_t netmgr_find_route
     uint32_t                *routeList, *tableList;
     uint32_t                numEntries = 0, i, numTables, tableNo;
     int32_t                 if_index, error_no = NETFP_PROXY_RETVAL_E_OP_FAILED;
-    char                    table_str[128];
     netmgr_mcb_t*           ptrNetMgrMCB;
     struct ifreq            ifReq;
 
@@ -1803,7 +1802,6 @@ int32_t netmgr_find_route
             /* Update application with next hop info found. Return success. */
             *nh_addr    =   nl_nhaddr;
             *table_no   =   rtnl_route_get_table (nl_route);
-            rtnl_route_table2str (*table_no, table_str, sizeof (table_str));
             error_no    =   NETFP_PROXY_RETVAL_SUCCESS;
 
             goto cleanup_and_return;
@@ -1819,7 +1817,8 @@ int32_t netmgr_find_route
 cleanup_and_return:
     for (i = 0; i < numEntries; i++)
         rtnl_route_put ((struct rtnl_route *)routeList[i]);
-    free(routeList);
+    if(routeList)
+        free(routeList);
     free(tableList);
 
     /* Done processing. Return. */

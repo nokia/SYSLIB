@@ -532,6 +532,12 @@ typedef struct NetfpMaster_SetPortCaptureRequest
      * port capturing is being enabled.
      */
     uint32_t            swInfo;
+
+    /**
+     * @brief   Flow to be used to push cloned packets onto. This needs to be specified only if
+     * port capturing is being enabled.
+     */
+    int32_t             flowId;
 }NetfpMaster_SetPortCaptureRequest;
 
 /**

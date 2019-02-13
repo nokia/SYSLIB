@@ -232,7 +232,7 @@ int32_t Netfp_transmitInterface
     int32_t                     retVal;
     paCmdIpFrag_t               ipFragCmd;
     paCmdInfo_t                 cmdInfo[NETFP_TX_CMD_MAX];
-	paCmdCrcOp_t                fpCrcCmd;
+    paCmdCrcOp_t                fpCrcCmd;
     paCmdNextRoute_t            switchRouteInfo;
     paCmdNextRoute_t            qosRouteInfo;
     paCmdNextRoute_t            postUDPChksumRouteInfo;
@@ -306,28 +306,28 @@ int32_t Netfp_transmitInterface
     {
         /* Configure the frame protocol CRC command. */
         fpCrcCmd.ctrlBitfield = pa_CRC_OP_CRC_RESULT_FOLLOW_PAYLOAD;
-		fpCrcCmd.startOffset  = ptrSockTxMetaInfo->headerSize + ptrSockTxMetaInfo->frameProtoPayloadOffset;
-		fpCrcCmd.len          = Pktlib_getPacketLen(ptrPayload) - (fpCrcCmd.startOffset + 2) - bytes;
-		fpCrcCmd.lenOffset    = 0;
-		fpCrcCmd.lenMask      = 0;
-		fpCrcCmd.lenAdjust    = 0;
+        fpCrcCmd.startOffset  = ptrSockTxMetaInfo->headerSize + ptrSockTxMetaInfo->frameProtoPayloadOffset;
+        fpCrcCmd.len          = Pktlib_getPacketLen(ptrPayload) - (fpCrcCmd.startOffset + 2) - bytes;
+        fpCrcCmd.lenOffset    = 0;
+        fpCrcCmd.lenMask      = 0;
+        fpCrcCmd.lenAdjust    = 0;
         fpCrcCmd.crcOffset    = fpCrcCmd.startOffset + fpCrcCmd.len;
         //fpCrcCmd.crcOffset    = 0;
-		fpCrcCmd.frameType    = 0;
+        fpCrcCmd.frameType    = 0;
         fpCrcCmd.crcSize      = 2;
         fpCrcCmd.initValue    = 0x0000;
 
         /* In non-secure mode, the packet is routed back to PA for further handling of the packet
          * We are using the Frame Protocol flow identifier to move the packet back into PDSP5 after the
          * CRC has been calculated */
-		postFpCrcRouteInfo.ctrlBitfield     = 0;
-		postFpCrcRouteInfo.dest             = pa_DEST_HOST;
-		postFpCrcRouteInfo.pktType_emacCtrl = 0;
-		postFpCrcRouteInfo.multiRouteIndex  = (uint16_t)pa_NO_MULTI_ROUTE;
-		postFpCrcRouteInfo.swInfo0          = 0;
-		postFpCrcRouteInfo.swInfo1          = 0;
-		postFpCrcRouteInfo.queue            = ptrNetfpClient->netcpTxQueue[NSS_PA_QUEUE_TXCMD_INDEX];
-		postFpCrcRouteInfo.flowId           = ptrSockL2ConnectInfo->ipsecChanFlowID;
+        postFpCrcRouteInfo.ctrlBitfield     = 0;
+        postFpCrcRouteInfo.dest             = pa_DEST_HOST;
+        postFpCrcRouteInfo.pktType_emacCtrl = 0;
+        postFpCrcRouteInfo.multiRouteIndex  = (uint16_t)pa_NO_MULTI_ROUTE;
+        postFpCrcRouteInfo.swInfo0          = 0;
+        postFpCrcRouteInfo.swInfo1          = 0;
+        postFpCrcRouteInfo.queue            = ptrNetfpClient->netcpTxQueue[NSS_PA_QUEUE_TXCMD_INDEX];
+        postFpCrcRouteInfo.flowId           = ptrSockL2ConnectInfo->ipsecChanFlowID;
         postFpCrcRouteInfo.statsIndex       = 0;
     }
 
@@ -506,16 +506,21 @@ int32_t Netfp_transmitInterface_FZM
     Ti_Pkt*                 ptrPayload
 )
 {
-    Netfp_SockL2ConnectInfo* ptrL2ConnectInfo = &ptrNetfpSocket->connectInfo.l2Info[ptrSockTxMetaInfo->l2CfgIndex];
     /* Get the client handle */
     Netfp_ClientMCB* ptrNetfpClient = ptrNetfpSocket->ptrNetfpClient;
-    if (ptrL2ConnectInfo->ifStatus == 0)
+
+    /* Get the socket L2 connect information: */
+    Netfp_SockL2ConnectInfo* ptrL2ConnectInfo = &ptrNetfpSocket->connectInfo.l2Info[ptrSockTxMetaInfo->l2CfgIndex];
+
+    /* Is the interface operational? */
+    if (unlikely(ptrL2ConnectInfo->ifStatus == 0))
     {
         /* Interface has been administrativly brought down. The packet cannot be sent out
          * We cleanup the packet memory. */
         Pktlib_freePacket(ptrNetfpClient->cfg.pktlibInstHandle, ptrPayload);
         return 0;
     }
+
     uint32_t packetSize = Pktlib_getPacketLen(ptrPayload);
 
     /***********************************************************************************************
@@ -527,11 +532,11 @@ int32_t Netfp_transmitInterface_FZM
 
         /* YES. Determine the number of bytes by which we need to extend the
          * packet size so that it fits the MINIMUM Ethernet Packet Size. */
+        uint32_t bytes = ETH_MIN_PKT_SIZE - packetSize;
 
         /* Is this a chained packet? */
         if (ptrNextPayload != NULL)
         {
-            uint32_t bytes = ETH_MIN_PKT_SIZE - packetSize;
             /* Loop through the chained packets till the end. */
             while (Pktlib_getNextPacket(ptrNextPayload) != NULL)
                 ptrNextPayload = Pktlib_getNextPacket(ptrNextPayload);
@@ -549,6 +554,147 @@ int32_t Netfp_transmitInterface_FZM
         Pktlib_setPacketLen(ptrPayload, ETH_MIN_PKT_SIZE);
     }
 
+    if (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET6)
+    {
+        /* Get Fragmentation and hardware UDP checksum settings */
+        uint8_t hwFragmentation = ptrSockTxMetaInfo->hwFragmentation;
+        uint8_t hwUDPChksum     = ptrSockTxMetaInfo->hwUDPChksum;
+
+        /* Is the packet going to be fragmented in the PA? */
+        paCmdIpFrag_t ipFragCmd;
+        if (likely(hwFragmentation == 1))
+        {
+            /* Configure the fragmentation parameters */
+            ipFragCmd.ipOffset = ptrL2ConnectInfo->l2HeaderSize;
+            ipFragCmd.mtuSize  = ptrL2ConnectInfo->mtu;
+        }
+
+        /* Is UDP checksum done in NETCP hardware? */
+        paTxChksum_t chksum;
+        paCmdNextRoute_t postUDPChksumRouteInfo;
+        if (likely(hwUDPChksum == 1))
+        {
+            /* UDP checksum command: startOffset, legnthBytes and initialSum are
+             * updated for every packet when setting up the UDP header. */
+            chksum.startOffset      = ptrSockTxMetaInfo->udpHwChkSum.startOffset;
+            chksum.lengthBytes      = ptrSockTxMetaInfo->udpHwChkSum.lengthBytes;
+            chksum.resultOffset     = 6;
+            chksum.initialSum       = ptrSockTxMetaInfo->udpHwChkSum.initialSum;
+            chksum.negative0        = 1;
+
+            /* In non-secure mode, the packet is routed back to PA for further handling of the packet
+             * We are using the PA-SA flow identifier to move the packet back into PDSP5 after the
+             * checksum has been calculated */
+            postUDPChksumRouteInfo.ctrlBitfield      = 0;
+            postUDPChksumRouteInfo.dest              = pa_DEST_HOST;
+            postUDPChksumRouteInfo.pktType_emacCtrl  = 0;
+            postUDPChksumRouteInfo.multiRouteIndex   = (uint16_t)pa_NO_MULTI_ROUTE;
+            postUDPChksumRouteInfo.swInfo0           = 0;
+            postUDPChksumRouteInfo.swInfo1           = 0;
+            postUDPChksumRouteInfo.queue             = ptrNetfpClient->netcpTxQueue[NSS_PA_QUEUE_TXCMD_INDEX];
+            postUDPChksumRouteInfo.flowId            = ptrL2ConnectInfo->ipsecChanFlowID;
+            postUDPChksumRouteInfo.statsIndex        = 0;
+        }
+
+        /* Do we need L3 shaping? */
+        paCmdNextRoute_t qosRouteInfo;
+        if (likely(ptrL2ConnectInfo->l3QosCfg.isEnable == 1))
+        {
+            /* L3 shaping is required: We need to setup the route information to send the packet
+             * to the L3 shaping engine. L3 shaping is always done on the Inner DSCP. */
+            qosRouteInfo.ctrlBitfield      = 0;
+            qosRouteInfo.dest              = pa_DEST_HOST;
+            qosRouteInfo.pktType_emacCtrl  = 0;
+            qosRouteInfo.multiRouteIndex   = (uint16_t)pa_NO_MULTI_ROUTE;
+            qosRouteInfo.swInfo0           = 0;
+            qosRouteInfo.swInfo1           = 0;
+            qosRouteInfo.queue             = ptrL2ConnectInfo->l3QosCfg.qid[ptrNetfpSocket->connectInfo.fpDSCPMapping[ptrNetfpSocket->priority]];
+            qosRouteInfo.flowId            = ptrL2ConnectInfo->l3QosCfg.flowId;
+            qosRouteInfo.statsIndex        = 0;
+        }
+
+        /* Populate the switch route information: This is used to push the packet directly to the
+         * switch port and then out on the wire. */
+        paCmdNextRoute_t switchRouteInfo;
+        switchRouteInfo.ctrlBitfield     = 0;
+        switchRouteInfo.dest             = pa_DEST_EMAC;
+        switchRouteInfo.pktType_emacCtrl = ptrL2ConnectInfo->switchPortNum;
+        switchRouteInfo.multiRouteIndex  = (uint16_t)pa_NO_MULTI_ROUTE;
+        switchRouteInfo.swInfo0          = 0;
+        switchRouteInfo.swInfo1          = 0;
+        switchRouteInfo.queue            = 0;
+        switchRouteInfo.flowId           = 0;
+        switchRouteInfo.statsIndex       = 0;
+
+        /*====================================================================================
+         * Contruct PA TX command to send the non-secure packet.
+         * The TX commmand has to follow the following sequences:
+         * 1. Hardware UDP checksum if configured in ptrSockTxMetaInfo.
+         * 2. Hardware Fragmentation if configured in ptrSockTxMetaInfo.
+         * 3. L3 Qos if configured in L2 Connect info
+         * 4. EMAC switch routing command.
+         *====================================================================================*/
+        paCmdInfo_t cmdInfo[NETFP_TX_CMD_MAX];
+        uint8_t cmdIdx = 0;
+
+        /* The definition supports upto 8 TX CMD */
+        uint8_t ifaceTxCmd = 0;
+
+        /* Setting up command for UDP checksum */
+        if (likely(hwUDPChksum == 1))
+        {
+            cmdInfo[cmdIdx].cmd              = pa_CMD_TX_CHECKSUM;
+            cmdInfo[cmdIdx].params.chksum    = chksum;
+            cmdIdx++;
+
+            cmdInfo[cmdIdx].cmd              = pa_CMD_NEXT_ROUTE;
+            cmdInfo[cmdIdx].params.route     = postUDPChksumRouteInfo;
+            cmdIdx++;
+            ifaceTxCmd += 1 << Netfp_PATxCmdSequence_UDPChksum;
+        }
+
+        /* Setting up command for IP Fragmentation */
+        if (likely(hwFragmentation == 1))
+        {
+            cmdInfo[cmdIdx].cmd              = pa_CMD_IP_FRAGMENT;
+            cmdInfo[cmdIdx].params.ipFrag    = ipFragCmd;
+            cmdIdx++;
+            ifaceTxCmd += 1 << Netfp_PATxCmdSequence_IPFrag;
+        }
+
+        /* Setting up command for L3 Qos */
+        if (likely(ptrL2ConnectInfo->l3QosCfg.isEnable == 1))
+        {
+            cmdInfo[cmdIdx].cmd              = pa_CMD_NEXT_ROUTE;
+            cmdInfo[cmdIdx].params.route     = qosRouteInfo;
+            cmdIdx++;
+            ifaceTxCmd += 1 << Netfp_PATxCmdSequence_RouteL3Qos;
+        }
+
+        /* Setting up command for Switch port */
+        cmdInfo[cmdIdx].cmd              = pa_CMD_NEXT_ROUTE;
+        cmdInfo[cmdIdx].params.route     = switchRouteInfo;
+        cmdIdx++;
+        ifaceTxCmd += 1 << Netfp_PATxCmdSequence_RouteEMAC;
+
+        /* update interface transmit statistics */
+        ptrNetfpSocket->extendedStats.ifaceTxStats[ifaceTxCmd]++;
+
+        /* Save number of commands added */
+        uint8_t numCommands = cmdIdx;
+
+        /* Set the command buffer size. */
+        ptrNetfpSocket->paCommands[ptrSockTxMetaInfo->l2CfgIndex].cmdBufferSize = NETFP_PA_CMD_BUFFER_SIZE;
+
+        /* Configure the command set. */
+        int32_t retVal = Pa_formatTxCmd (numCommands, cmdInfo, 0,
+                     (Ptr)(ptrNetfpSocket->paCommands[ptrSockTxMetaInfo->l2CfgIndex].cmdBuffer),
+                     &ptrNetfpSocket->paCommands[ptrSockTxMetaInfo->l2CfgIndex].cmdBufferSize);
+
+        if (unlikely(retVal != pa_OK))
+            return retVal;
+    }
+
     /* Attach the command in the protocol specific data of the descriptor. */
     Cppi_setPSData (Cppi_DescType_HOST, (Cppi_Desc *)ptrPayload,
         (uint8_t *)(ptrNetfpSocket->paCommands[ptrSockTxMetaInfo->l2CfgIndex].cmdBuffer),
@@ -561,10 +707,9 @@ int32_t Netfp_transmitInterface_FZM
         return 0;
 
     /************************************************************************
-     * Socket Statistics: Increment the NON-SECURE socket statistics for the
-     * IPv4
+     * Socket Statistics: Increment the NON-SECURE socket statistics
      ************************************************************************/
-    Netfp_incNonSecureIPv4Stats_FZM(ptrNetfpSocket, ptrSockTxMetaInfo, packetSize);
+    Netfp_incNonSecureStats_FZM(ptrNetfpSocket, ptrSockTxMetaInfo, packetSize);
 
     /* We always push the packet to PDSP5 since the commands have been populated properly in the packet it will
      * find its way out through the configured command set to the switch port and out onto the wire. */

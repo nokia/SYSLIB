@@ -236,6 +236,20 @@ NetfpProxy_IfMgmtMCB        gIfMgmtMCB;
 static int32_t NetfpProxy_ifaceInstantiate (const char*, NetfpProxy_InterfaceCfg*, int32_t*);
 static int32_t NetfpProxy_ifaceDestroy (NetfpProxy_Interface*);
 
+static inline int is_nl_addr_ipv4(const struct nl_addr * const nlIPAddr)
+{
+    if(nl_addr_get_family (nlIPAddr) == AF_INET)
+        return 1;
+    return 0;
+}
+
+static inline int is_nl_addr_ipv6(const struct nl_addr * const nlIPAddr)
+{
+    if(nl_addr_get_family (nlIPAddr) == AF_INET6)
+        return 1;
+    return 0;
+}
+
 /**
  *  @b Description
  *  @n
@@ -533,6 +547,35 @@ static int32_t NetfpProxy_ifaceGetBridgedInterfaceList(const char* bridgeIfName,
     return count;
 }
 
+static int32_t NetfpProxy_findDuplicateIp (Netfp_IPAddr* ipAddress, Netfp_IPAddr* subnetMaskList, struct nl_addr* nlIPAddr)
+{
+    uint32_t mask[4] = {0};
+    if(is_nl_addr_ipv4(nlIPAddr))
+        NetfpProxy_convertV4Prefix2Mask (nl_addr_get_prefixlen (nlIPAddr), mask);
+    else
+        NetfpProxy_convertV6Prefix2Mask (nl_addr_get_prefixlen (nlIPAddr), mask);
+
+    for (uint32_t index = 0; index < NETFP_PROXY_MAX_IP; index++)
+    {
+        if (is_nl_addr_ipv4(nlIPAddr) &&
+            (ipAddress[index].ver == Netfp_IPVersion_IPV4))
+        {
+            if ((memcmp (&ipAddress[index].addr.ipv4.u.a8[0], nl_addr_get_binary_addr (nlIPAddr), 4) == 0) &&
+                (memcmp (&subnetMaskList[index].addr.ipv4.u.a8[0], mask, 4) == 0))
+                return index;
+        }
+        else if (is_nl_addr_ipv6(nlIPAddr) &&
+                 (ipAddress[index].ver == Netfp_IPVersion_IPV6))
+        {
+            if ((memcmp (&ipAddress[index].addr.ipv6.u.a8[0], nl_addr_get_binary_addr (nlIPAddr), 16) == 0) &&
+                (memcmp (&subnetMaskList[index].addr.ipv6.u.a8[0], mask, 16) == 0))
+                return index;
+        }
+    }
+
+    return -1;
+}
+
 /**
  *  @b Description
  *  @n
@@ -558,16 +601,12 @@ static int32_t NetfpProxy_ifaceGetIP
     Netfp_IPAddr*   subnetMaskList
 )
 {
-    int32_t             errCode;
-    uint32_t            index;
-    uint32_t*           ipAddrList;
+    uint32_t*           ipAddrList = NULL;
     uint32_t            numEntries = 0;
-    struct rtnl_addr*   nlIPAddrInfo;
-    struct nl_addr*     nlIPAddr;
 
     /* Get all the IPv4, IPv6 addresses populate them to the NETFP library. It is possible that an
      * interface does not have an IP address. */
-    errCode = netmgr_addr_get (gIfMgmtMCB.netMgrIfHandle, ifName, &ipAddrList, &numEntries);
+    int32_t errCode = netmgr_addr_get (gIfMgmtMCB.netMgrIfHandle, ifName, &ipAddrList, &numEntries);
     if (errCode < 0 && errCode != NETFP_PROXY_RETVAL_E_OP_FAILED)
     {
         /* Error: error to get IP addresses. Returns NETFP_PROXY_RETVAL_E_OP_FAILED if no assigned IP(s) */
@@ -576,30 +615,39 @@ static int32_t NetfpProxy_ifaceGetIP
         return -1;
     }
 
-    /* Sanity Check: Do not exceed the max permissible entries? */
-    if (numEntries >= NETFP_PROXY_MAX_IP)
-    {
-        /* Error: We are exceeding the MAX supported entries */
-        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Interface '%s' has %d IP addresses only %d are supported\n",
-                           ifName, numEntries, NETFP_PROXY_MAX_IP);
-        return -1;
-    }
-
     /* Cycle through and store all the IPv4/IPv6 addresses/subnet mask */
-    for (index = 0; index < numEntries; index++)
+    uint32_t index = 0;
+    for (int iterator = 0; iterator < numEntries; iterator++)
     {
         /* Convert the IP address into the NETFP format */
-        nlIPAddrInfo =  (struct rtnl_addr*)ipAddrList[index];
-        nlIPAddr     =  rtnl_addr_get_local (nlIPAddrInfo);
+        struct rtnl_addr* nlIPAddrInfo = (struct rtnl_addr*)ipAddrList[iterator];
+        struct nl_addr* nlIPAddr =  rtnl_addr_get_local (nlIPAddrInfo);
 
-        if (nl_addr_iszero(nlIPAddr) == 1) {
+        if (nl_addr_iszero(nlIPAddr) == 1)
+        {
             // Not a valid IP address
             ipAddressList[index].ver  = Netfp_IPVersion_INVALID;
             subnetMaskList[index].ver = Netfp_IPVersion_INVALID;
-        } else {
+        }
+        else
+        {
+            if (NetfpProxy_findDuplicateIp (ipAddressList, subnetMaskList, nlIPAddr) >= 0)
+            {
+                char strIPAddress[256];
+                NetfpProxy_logMsg (NETFP_PROXY_LOG_INFO, "Found duplicate IP: %s for interface: %s", nl_addr2str(nlIPAddr, strIPAddress, sizeof(strIPAddress)), ifName);
+                continue;
+            }
+
+            // if we are past the ipAddressList array size, continue checking
+            // rest of valid addresses to report real number of IPs at the bottom
+            if (index >= NETFP_PROXY_MAX_IP)
+            {
+                ++index;
+                continue;
+            }
 
             /* Is this an IPv4 address? */
-            if (nl_addr_get_family (nlIPAddr) == AF_INET)
+            if (is_nl_addr_ipv4 (nlIPAddr))
             {
                 /* IPv4 Address: */
                 ipAddressList[index].ver = Netfp_IPVersion_IPV4;
@@ -636,6 +684,23 @@ static int32_t NetfpProxy_ifaceGetIP
                 NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: '%s' [%d] %s\n", ifName, index, strIPAddress);
             }
         }
+
+        ++index;
+    }
+
+    int32_t returnVal = index;
+
+    /* Sanity Check: Do not exceed the max permissible entries? */
+    if (index > NETFP_PROXY_MAX_IP)
+    {
+        /* Error: We are exceeding the MAX supported entries */
+        NetfpProxy_logMsg (NETFP_PROXY_LOG_ERROR, "Error: Interface '%s' has %d IP addresses only %d are supported\n",
+                           ifName, index, NETFP_PROXY_MAX_IP);
+
+        memset(ipAddressList, 0, sizeof(*ipAddressList) * NETFP_PROXY_MAX_IP);
+        memset(subnetMaskList, 0, sizeof(*subnetMaskList) * NETFP_PROXY_MAX_IP);
+
+        returnVal = -1;
     }
 
     /* Cleanup only if there are IP Addresses: */
@@ -646,7 +711,8 @@ static int32_t NetfpProxy_ifaceGetIP
             rtnl_addr_put ((struct rtnl_addr*)ipAddrList[index]);
         free(ipAddrList);
     }
-    return numEntries;
+
+    return returnVal;
 }
 
 /**
@@ -669,27 +735,33 @@ static int32_t NetfpProxy_ifaceFindIP (NetfpProxy_Interface* ptrNetfpProxyInterf
 {
     uint32_t    index;
 
+    uint32_t mask[4] = {0};
+    if (is_nl_addr_ipv4 (nlIPAddr))
+        NetfpProxy_convertV4Prefix2Mask (nl_addr_get_prefixlen (nlIPAddr), mask);
+    else
+        NetfpProxy_convertV6Prefix2Mask (nl_addr_get_prefixlen (nlIPAddr), mask);
+
     /* Cycle through all the IP addresses which are assigned to the interface */
     for (index = 0; index < NETFP_PROXY_MAX_IP; index++)
     {
         /* Search the same socket family: */
-        if ((nl_addr_get_family (nlIPAddr) == AF_INET) &&
+        if (is_nl_addr_ipv4 (nlIPAddr) &&
             (ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].ver == Netfp_IPVersion_IPV4))
         {
             /* IPv4 Address: Do we have a match? */
-            if (memcmp ((void *)&ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].addr.ipv4.u.a8[0],
-                        (void *)nl_addr_get_binary_addr (nlIPAddr), 4) == 0)
+            if ((memcmp (&ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].addr.ipv4.u.a8[0], nl_addr_get_binary_addr (nlIPAddr), 4) == 0) &&
+                (memcmp (&ptrNetfpProxyInterface->proxyIfCfg.subnetMask[index].addr.ipv4.u.a8[0], mask, 4) == 0))
             {
                 /* YES: Perfect return the matched index */
                 return index;
             }
         }
-        if ((nl_addr_get_family (nlIPAddr) == AF_INET6) &&
-            (ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].ver == Netfp_IPVersion_IPV6))
+        else if (is_nl_addr_ipv6 (nlIPAddr) &&
+                (ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].ver == Netfp_IPVersion_IPV6))
         {
             /* IPv6 Address: Do we have a match? */
-            if (memcmp ((void *)&ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].addr.ipv6.u.a8[0],
-                        (void *)nl_addr_get_binary_addr (nlIPAddr), 16) == 0)
+            if ((memcmp (&ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].addr.ipv6.u.a8[0], nl_addr_get_binary_addr (nlIPAddr), 16) == 0) &&
+                (memcmp (&ptrNetfpProxyInterface->proxyIfCfg.subnetMask[index].addr.ipv6.u.a8[0], mask, 16) == 0))
             {
                 /* YES: Perfect return the matched index */
                 return index;
@@ -905,8 +977,8 @@ static NetfpProxy_Interface* NetfpProxy_ifaceGetBridgedPort
         if(portNumber == -1)
         {
             NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: MAC %02x:%02x:%02x:%02x:%02x:%02x not found, sleeping for %u us\n", *ptrMACAddress,
-                               *(ptrMACAddress + 1), *(ptrMACAddress + 2), *(ptrMACAddress + 3), *(ptrMACAddress + 4), *(ptrMACAddress + 5), gNetfpProxyMcb.pollDelay * 20u);
-            usleep (gNetfpProxyMcb.pollDelay * 20u);
+                               *(ptrMACAddress + 1), *(ptrMACAddress + 2), *(ptrMACAddress + 3), *(ptrMACAddress + 4), *(ptrMACAddress + 5), gNetfpProxyMcb.pollDelay * 200u);
+            usleep (gNetfpProxyMcb.pollDelay * 200u);
         }
     }
     /* Close the bridge socket: */
@@ -1594,7 +1666,7 @@ void NetfpProxy_ifaceMonitorAddrUpdates (int32_t action, int32_t type, void* obj
             }
 
             /* Is this an IPv4 address? */
-            if (nl_addr_get_family (nlIPAddr) == AF_INET)
+            if (is_nl_addr_ipv4 (nlIPAddr))
             {
                 /* IPv4 Address: */
                 ptrNetfpProxyInterface->proxyIfCfg.ipAddress[index].ver = Netfp_IPVersion_IPV4;

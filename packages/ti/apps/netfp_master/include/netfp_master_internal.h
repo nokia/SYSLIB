@@ -69,7 +69,6 @@
 #include <ti/runtime/pktlib/pktlib.h>
 #include <ti/runtime/msgcom/msgcom.h>
 #include <ti/runtime/netfp/netfp.h>
-#include <ti/runtime/uintc/uintc.h>
 #include <ti/runtime/resmgr/resmgr.h>
 #include <ti/apps/netfp_master/include/listlib.h>
 #include <ti/apps/netfp_master/netfp_master.h>
@@ -239,11 +238,6 @@ typedef struct NetfpMaster_PortCapture
      * @brief   Flow identifier used for capturing.
      */
     int32_t                             flowId;
-
-    /**
-     * @brief   Flow handle used for capturing
-     */
-    Cppi_FlowHnd                        flowHandle;
 }NetfpMaster_PortCapture;
 
 /**
@@ -527,16 +521,6 @@ typedef struct NetfpMaster_MCB
     Msgcom_InstHandle           msgcomInstanceHandle;
 
     /**
-     * @brief UINTC Handle used to manage interrupts for the application managed mode
-     */
-    UintcHandle                 appManagedHandle;
-
-    /**
-     * @brief UINTC Handle used to manage interrupts for the UINTC managed mode
-     */
-    UintcHandle                 uintcManagedHandle;
-
-    /**
      * @brief NETFP Master execution status
      */
     uint32_t                    executionStatus;
@@ -551,16 +535,6 @@ typedef struct NetfpMaster_MCB
      * if any interface in the configuration file has preclassification enabled.
      */
     int32_t                     enableGlobalPreclassification;
-
-    /**
-     * @brief   UINTC File descriptor associated with the outer IP reassembly channel
-     */
-    int32_t                     uintcFdOuterIPChannel;
-
-    /**
-     * @brief   UINTC File descriptor associated with the inner IP reassembly channel
-     */
-    int32_t                     uintcFdInnerIPChannel;
 
     /**
      * @brief   The outer IP channel which receives outer IPv4 fragments.
@@ -607,7 +581,7 @@ typedef struct NetfpMaster_MCB
      * @brief Pointer to the port capture list.
      */
     NetfpMaster_PortCapture*    ptrPortCaptureList;
-    
+
     /**
      * @brief Pointer to the port capture list.
      */

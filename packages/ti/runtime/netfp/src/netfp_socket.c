@@ -50,6 +50,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <ddal/ddal_cpu.h> //fzm
+
 /* PDK Include Files. */
 #include <ti/csl/csl_chip.h>
 #include <ti/csl/csl_cache.h>
@@ -108,7 +110,8 @@
  *********************** NETFP Socket Functions ***************************
  **************************************************************************/
 
-static void updateNetHeaderPkt(Netfp_Socket*, Netfp_SockTxMetaInfo_FZM*, uint16_t, int, uint16_t);
+static void updateNetHeaderPktIPv4(Netfp_Socket*, Netfp_SockTxMetaInfo_FZM*, uint16_t, int, uint16_t);
+static void updateNetHeaderPktIPv6(Netfp_Socket*, Netfp_SockTxMetaInfo_FZM*, int);
 
 #ifndef __ARMv7
 /**
@@ -561,16 +564,18 @@ int32_t Netfp_getPayload
         if (Netfp_isIPv4Packet ((Netfp_IPHeader*)(ptrDataBuffer + l3Offset)) == 1)
         {
             /* IPv4 Packet: Populate the peer ip address information. */
+            Netfp_IPHeader* ipv4hdr = (Netfp_IPHeader*)(ptrDataBuffer + l3Offset);
             ptrPeerAddress->sin_addr.ver = Netfp_IPVersion_IPV4;
             for (index = 0; index < 4; index++)
-                ptrPeerAddress->sin_addr.addr.ipv4.u.a8[index] = *(ptrDataBuffer + l3Offset + offsetof(Netfp_IPHeader, IPSrc) + index);
+                ptrPeerAddress->sin_addr.addr.ipv4.u.a8[index] = ipv4hdr->IPSrc[index];
         }
         else
         {
             /* IPv6 Packet: Populate the peer ip address information. */
             ptrPeerAddress->sin_addr.ver = Netfp_IPVersion_IPV6;
+            Netfp_IPv6Header* ipv6hdr = (Netfp_IPv6Header*)(ptrDataBuffer + l3Offset);
             for (index = 0; index < 16; index++)
-                ptrPeerAddress->sin_addr.addr.ipv6.u.a8[index] = *(ptrDataBuffer + l3Offset + offsetof(Netfp_IPv6Header, SrcAddr) + index);
+                ptrPeerAddress->sin_addr.addr.ipv6.u.a8[index] = ipv6hdr->SrcAddr.u.a8[index];
         }
 
         /* Populate the peer UDP port information: We cannot access the UDP header directly
@@ -2115,7 +2120,7 @@ static void Netfp_setupUDPHeader
             pseudoHdr.NxtHdr  = IPPROTO_UDP;
 
             /* Compute the UDP Checksum in software. */
-            ptrUDPHeader->UDPChecksum = Netfp_udp6Checksum (ptrPayloadPkt, gtpuHeaderSize,(uint8_t*)ptrUDPHeader, &pseudoHdr);
+            ptrUDPHeader->UDPChecksum = Netfp_udp6Checksum(ptrPayloadPkt, gtpuHeaderSize, (uint8_t*)ptrUDPHeader, &pseudoHdr);
         }
     }
     return;
@@ -2243,7 +2248,7 @@ static void Netfp_setupIPv6Header
     ptrIPv6Header->FlowLabel[2]  = 0;
     ptrIPv6Header->VerTC         = (ptrIPv6Header->VerTC & 0xF0) | ((priority >> 2) & 0x0F);
     ptrIPv6Header->FlowLabel[0]  = (ptrIPv6Header->FlowLabel[0] & 0x3F) | (((priority & 0x03) << 6) & 0xC0);
-    ptrIPv6Header->PayloadLength = Netfp_htons (payloadLen);
+    ptrIPv6Header->PayloadLength = Netfp_htons(payloadLen);
     ptrIPv6Header->NextHeader    = protocol;
     ptrIPv6Header->HopLimit      = 255; //fzm
 
@@ -2837,7 +2842,7 @@ static int32_t Netfp_fragment_FZM
             /* Special Case: First Fragment. */
             NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[sockTxMetaInfo->l2CfgIndex];
             memcpy(sockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize);
-            updateNetHeaderPkt(ptrNetfpSocket, sockTxMetaInfo, packetId, 1, ipv4FlagOffset);
+            updateNetHeaderPktIPv4(ptrNetfpSocket, sockTxMetaInfo, packetId, 1, ipv4FlagOffset);
 
             /* Increment the statistics */
             ptrNetfpSocket->extendedStats.numUDPTxPkts++;
@@ -2852,7 +2857,7 @@ static int32_t Netfp_fragment_FZM
 
             NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[sockTxMetaInfo->l2CfgIndex];
             memcpy(sockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize - UDPHDR_SIZE);
-            updateNetHeaderPkt(ptrNetfpSocket, sockTxMetaInfo, packetId, 0, ipv4FlagOffset);
+            updateNetHeaderPktIPv4(ptrNetfpSocket, sockTxMetaInfo, packetId, 0, ipv4FlagOffset);
 
             /* All other fragments dont have any additional Layer4 headers */
             ipPayloadLength = fragmentSize;
@@ -3335,6 +3340,245 @@ static int32_t Netfp_fragment6
     return (*errCode) ? -1 : 0;
 }
 
+static void Netfp_setupUdpHeader_FZM
+(
+    Netfp_Socket*               ptrNetfpSocket,
+    Netfp_SockTxMetaInfo_FZM*   ptrSockTxMetaInfo,
+    uint8_t*                    ptrHdrDataBuffer,
+    uint16_t                    payloadLen
+)
+{
+    /* Get the payload packet to calculate the UDP checksum */
+    Ti_Pkt* ptrPayloadPkt  = ptrSockTxMetaInfo->ptrPayload;
+
+    /* Get the UDP Header. */
+    Netfp_UDPHeader* ptrUDPHeader = (Netfp_UDPHeader*)ptrHdrDataBuffer;
+
+    NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[ptrSockTxMetaInfo->l2CfgIndex];
+    /* Populate the UDP Header. */
+    memcpy(ptrUDPHeader, netHeadersPtr->headerBuff + netHeadersPtr->headerSize - UDPHDR_SIZE, UDPHDR_SIZE);
+    ptrUDPHeader->Length = Netfp_htons(UDPHDR_SIZE + payloadLen);
+
+    Netfp_PseudoV6Hdr pseudoHdr;
+    /* Initialize the Pseudo header which is used for Layer4 UDP checksum calculations. */
+    pseudoHdr.SrcAddr = ptrNetfpSocket->bindInfo.innerIPSrc.addr.ipv6;
+    pseudoHdr.DstAddr = ptrNetfpSocket->connectInfo.innerIPDst.addr.ipv6;
+    pseudoHdr.PktLen  = ptrUDPHeader->Length;
+    pseudoHdr.Rsvd[0] = 0;
+    pseudoHdr.Rsvd[1] = 0;
+    pseudoHdr.Rsvd[2] = 0;
+    pseudoHdr.NxtHdr  = IPPROTO_UDP;
+
+    /* Compute the UDP Checksum in software. */
+    ptrUDPHeader->UDPChecksum = Netfp_udp6Checksum(ptrPayloadPkt, 0 ,(uint8_t*)ptrUDPHeader, &pseudoHdr);
+
+    return;
+}
+
+static int32_t Netfp_fragment6_FZM
+(
+    Netfp_Socket*           ptrNetfpSocket,
+    Netfp_SockTxMetaInfo_FZM*   sockTxMetaInfo,
+    int32_t*                errCode
+)
+{
+    *errCode = 0;
+
+    /* Get the NETFP Client MCB */
+    Netfp_ClientMCB* ptrClientMCB = ptrNetfpSocket->ptrNetfpClient;
+
+    /* Get the NETFP Client PKTLIB Instance handle. */
+    Pktlib_InstHandle pktlibInstHandle = ptrClientMCB->cfg.pktlibInstHandle;
+
+    /* Get the NETFP Socket L2 connect information: */
+    Netfp_SockL2ConnectInfo* ptrSockL2ConnectInfo = sockTxMetaInfo->l2ConnectInfo;
+
+    sockTxMetaInfo->hwUDPChksum = 0;
+
+    /* All fragments will have the same unique identifier in the IP packet */
+    uint32_t packetId = Netfp_getUniqueId();
+
+    /* Get the total payload length. */
+    uint32_t packetLen = Pktlib_getPacketLen(sockTxMetaInfo->ptrPayload);
+
+    /* Get heap handler to not touch the descriptor after it is pushed to HW */
+    Pktlib_HeapHandle payloadHeap = Pktlib_getPktHeap(sockTxMetaInfo->ptrPayload);
+
+    /* The header size passed to the function includes the Layer2 header also;
+     * which needs to be discounted here. */
+    uint32_t headerSize = sockTxMetaInfo->headerSize - sockTxMetaInfo->l2ConnectInfo->l2HeaderSize;
+
+    /* Initialize the fragmentation offset */
+    uint32_t fragmentOffset = 0;
+
+    /* Non Secure Socket: Prepare the IPv6 Fragmentation Header. */
+    Netfp_IPv6FragHeader fragIPv6Header;
+    uint16_t ipv6FlagOffset = 0;
+    Netfp_setupIPv6FragHeader((uint8_t*)&fragIPv6Header, IPPROTO_UDP, ipv6FlagOffset, (uint8_t*)&packetId);
+
+    /* Loop around till the entire payload packet is fragmented & sent out. */
+    while (1)
+    {
+        /* fzm--> */
+        /* Determine the MAX size of each IP fragment. Fragment Sizes
+         * are a multiple of 8 octets. Take this into account while computing the
+         * size of each fragment. */
+        uint32_t fragmentSize = sockTxMetaInfo->l2ConnectInfo->mtu - headerSize - IPV6_FRAGHDR_SIZE;
+        if (fragmentSize > packetLen)
+            fragmentSize = packetLen;
+        else
+            fragmentSize &= ~0x7;
+        /* fzm<-- */
+
+        /* Allocate a buffer-less packet so that we can split the packet. */
+        Ti_Pkt* ptrFragment = Pktlib_allocPacketPrefetch(ptrClientMCB->cfg.fragmentHeap, 0); //fzm
+        if (unlikely(ptrFragment == NULL))
+        {
+            *errCode = NETFP_ENOMEM;
+            break;
+        }
+
+        /* Allocate a header packet which carries all standard networking headers (including the IPv6
+        * fragment header*/
+        Ti_Pkt* ptrFragHeaderPkt = Pktlib_allocPacketPrefetch(ptrClientMCB->cfg.netHeaderHeapHandle,
+                                                      headerSize + sockTxMetaInfo->l2ConnectInfo->l2HeaderSize + IPV6_FRAGHDR_SIZE);
+        if (unlikely(ptrFragHeaderPkt == NULL))
+        {
+            Pktlib_freePacket(pktlibInstHandle, ptrFragment);
+            *errCode = NETFP_ENOMEM;
+            break;
+        }
+
+        /* Are there more fragments or not? */
+        packetLen = packetLen - fragmentSize;
+        if ((int32_t)packetLen <= 0)
+            ipv6FlagOffset = 0x0;
+        else
+            ipv6FlagOffset = 0x1;
+
+        /* Setup the IP Fragmentation. */
+        ipv6FlagOffset = ipv6FlagOffset | fragmentOffset;
+
+        /* Each fragment which is created will have additional headers (layer3 & layer2) added to it. */
+        uint32_t fragmentHeaderSize;
+        Pktlib_getDataBuffer(ptrFragHeaderPkt, &sockTxMetaInfo->ptrHeaderBuffer, &fragmentHeaderSize);
+
+        uint16_t ipPayloadLength = 0;
+        /* Is this the first fragment? */
+        if (fragmentOffset == 0)
+        {
+            /* Special Case: First Fragment. */
+            NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[sockTxMetaInfo->l2CfgIndex];
+            memcpy(sockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize);
+            updateNetHeaderPktIPv6(ptrNetfpSocket, sockTxMetaInfo, 1);
+
+            Netfp_setupUdpHeader_FZM(ptrNetfpSocket, sockTxMetaInfo,
+                                     (uint8_t*)sockTxMetaInfo->ptrHeaderBuffer + netHeadersPtr->l2HeaderSize + IPv6HDR_SIZE + IPV6_FRAGHDR_SIZE,
+                                     Pktlib_getPacketLen(sockTxMetaInfo->ptrPayload));
+
+            /* Increment the statistics */
+            ptrNetfpSocket->extendedStats.numUDPTxPkts++;
+
+            /* The IP Payload Length accounts for the UDP Header also in this case. */
+            ipPayloadLength = fragmentSize + UDPHDR_SIZE + IPV6_FRAGHDR_SIZE;
+        }
+        else if (fragmentOffset > 0)
+        {
+            NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[sockTxMetaInfo->l2CfgIndex];
+            memcpy(sockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize - UDPHDR_SIZE);
+            updateNetHeaderPktIPv6(ptrNetfpSocket, sockTxMetaInfo, 0);
+
+            /* All other fragments dont have any additional Layer4 headers */
+            ipPayloadLength = fragmentSize + IPV6_FRAGHDR_SIZE;
+        }
+
+        /* Get the IPv6 Header. */
+        Netfp_IPv6Header* ptrIPv6Header = (Netfp_IPv6Header*)(sockTxMetaInfo->ptrHeaderBuffer + ptrSockL2ConnectInfo->l2HeaderSize);
+
+        /* Update packet length and next header in IPv6 Header*/
+        ptrIPv6Header->PayloadLength = Netfp_htons(ipPayloadLength);
+        ptrIPv6Header->NextHeader = IPPROTO6_FRAG;
+
+        /*Update IPv6 FragHdr */
+        fragIPv6Header.FragOffset = Netfp_htons(ipv6FlagOffset);
+        Netfp_IPv6FragHeader* ptrFragIPv6Header = (Netfp_IPv6FragHeader*)(sockTxMetaInfo->ptrHeaderBuffer + ptrSockL2ConnectInfo->l2HeaderSize + IPv6HDR_SIZE);
+        memcpy(ptrFragIPv6Header, &fragIPv6Header, IPV6_FRAGHDR_SIZE);
+
+        /* Split the payload packet into the fragment size */
+        Ti_Pkt* ptrPkt1, *ptrPkt2;
+        int32_t splitRetVal = Pktlib_splitPacket (pktlibInstHandle, sockTxMetaInfo->ptrPayload, ptrFragment, fragmentSize, &ptrPkt1, &ptrPkt2);
+
+        if (splitRetVal == 1)
+        {
+            Pktlib_freePacket(pktlibInstHandle, ptrFragment);
+        }
+
+        if (unlikely(splitRetVal < 0))
+        {
+            Pktlib_freePacket(pktlibInstHandle, ptrFragment);
+            Pktlib_freePacket(pktlibInstHandle, ptrFragHeaderPkt);
+
+            *errCode = NETFP_EFRAGFAIL;
+            break;
+        }
+
+        /* Link the header packet to the 'split' packet. */
+        Pktlib_packetMerge(pktlibInstHandle, ptrFragHeaderPkt, ptrPkt1, NULL);
+
+        /* Increment the statistics for the number of IPv6 fragments which have been created. */
+        ptrNetfpSocket->extendedStats.numIPv6Frags++;
+
+        /* Send the packet on the specified interface.
+         *  - Software fragmentation has already been done. Bypass this in the NETCP */
+        int32_t retVal = Netfp_transmitInterface_FZM(ptrNetfpSocket, sockTxMetaInfo, ptrFragHeaderPkt);
+
+        if (unlikely(retVal < 0))
+        {
+            /* 1) Kill the next link in the fragment header packet to not free main descriptor passed to Netfp_fragment() */
+            Cppi_linkNextBD (Cppi_DescType_HOST, (Cppi_Desc*)ptrFragHeaderPkt, (Cppi_Desc*)NULL);
+
+            /* 2) Free allocated fragment header */
+            Pktlib_freePacket(pktlibInstHandle, ptrFragHeaderPkt);
+
+            /* 3) Free the packet if was not freed yet as split()'s step */
+            if (splitRetVal != 1)
+                Pktlib_freePacket(pktlibInstHandle, ptrFragment);
+
+            /* Because errCode may contain failures from different level of transmitting,
+               set EINTERNAL as recognizable critical error when not ENOMEM type */
+            if (retVal == NETFP_ENOMEM)
+                *errCode = NETFP_ENOMEM;
+            else
+                *errCode = NETFP_EINTERNAL;
+
+            break;
+        }
+
+        /* Are we done sending all the packets. */
+        if ((int32_t)packetLen <= 0)
+            break;
+
+        /* Is this a secure socket? */
+        /* NO. All fragments will only have the IP Header added to it. */
+        headerSize = IPv6HDR_SIZE;
+        /* Increment the fragmentation offset to account for the number of bytes sent */
+        fragmentOffset = fragmentOffset + ipPayloadLength - IPV6_FRAGHDR_SIZE;
+
+        /* The new payload packet is now what is left */
+        sockTxMetaInfo->ptrPayload = ptrPkt2;
+    }
+
+    /* Run Garbage Collection on the following heaps.
+     *  - The fragment heap has zero buffer descriptors which after the CPDMA transmission
+     *    will always get recycled into the garbage queue.
+     *  - The payload packet has been split and referenced; so this packet will also end
+     *    up in the garbage queue. */
+    Pktlib_garbageCollection (pktlibInstHandle, ptrNetfpSocket->ptrNetfpClient->cfg.fragmentHeap);
+    Pktlib_garbageCollection (pktlibInstHandle, payloadHeap);
+
+    return (*errCode) ? -1 : 0;
+}
+
 /**
  *  @b Description
  *  @n
@@ -3605,20 +3849,21 @@ static void prepareL2Header(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
             tci = (ptrNetfpSocket->priorityTag & NETFP_VLAN_PRIORITYTAG_MASK) << 13;
         }
         ptrVLANHeader->tci = Netfp_htons(tci);
-        ptrVLANHeader->protocol = Netfp_htons(ETH_IP);
+        ptrVLANHeader->protocol = (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET) ? Netfp_htons(ETH_IP) : Netfp_htons(ETH_IP6);
         l2HeaderSize = ETHHDR_SIZE + VLANHDR_SIZE;
     }
     else
     {
-        ptrEthHeader->Type = Netfp_htons(ETH_IP);
+        ptrEthHeader->Type = (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET) ? Netfp_htons(ETH_IP) : Netfp_htons(ETH_IP6);
         l2HeaderSize = ETHHDR_SIZE;
     }
 
     netHeadersPtr->l2HeaderSize = l2HeaderSize;
-    netHeadersPtr->headerSize = l2HeaderSize + IPHDR_SIZE + UDPHDR_SIZE;
+    netHeadersPtr->headerSize = l2HeaderSize + UDPHDR_SIZE;
+    netHeadersPtr->headerSize += (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET) ? IPHDR_SIZE : IPv6HDR_SIZE;
 }
 
-static void prepareIpHeader(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
+static void prepareIPv4Header(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
 {
     NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[cfgIndex];
     Netfp_IPHeader* ipHeaderPtr = (Netfp_IPHeader*)(netHeadersPtr->headerBuff + netHeadersPtr->l2HeaderSize);
@@ -3635,10 +3880,58 @@ static void prepareIpHeader(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
     memcpy(ipHeaderPtr->IPDst, &ptrNetfpSocket->connectInfo.innerIPDst.addr.ipv4.u.a8[0], 4);
 }
 
-static void prepareUdpHeader(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
+static void prepareIPv6Header(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
 {
     NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[cfgIndex];
-    Netfp_UDPHeader* udpHeaderPtr = (Netfp_UDPHeader*)(netHeadersPtr->headerBuff + netHeadersPtr->l2HeaderSize + IPHDR_SIZE);
+    Netfp_IPv6Header* ipv6HeaderPtr = (Netfp_IPv6Header*)(netHeadersPtr->headerBuff + netHeadersPtr->l2HeaderSize);
+    ipv6HeaderPtr->VerTC = IPV6_VER_VALUE;
+    uint8_t dscp = ptrNetfpSocket->connectInfo.l2Info[cfgIndex].innerToOuterDSCPMap[ptrNetfpSocket->connectInfo.fpDSCPMapping[ptrNetfpSocket->priority]];
+    ipv6HeaderPtr->FlowLabel[0]  = 0;
+    ipv6HeaderPtr->FlowLabel[1]  = 0;
+    ipv6HeaderPtr->FlowLabel[2]  = 0;
+    ipv6HeaderPtr->VerTC         = (ipv6HeaderPtr->VerTC & 0xF0) | ((dscp >> 2) & 0x0F);
+    ipv6HeaderPtr->FlowLabel[0]  = (ipv6HeaderPtr->FlowLabel[0] & 0x3F) | (((dscp & 0x03) << 6) & 0xC0);
+    ipv6HeaderPtr->NextHeader    = IPPROTO_UDP;
+    ipv6HeaderPtr->HopLimit      = 255; //fzm
+
+    memcpy(ipv6HeaderPtr->SrcAddr.u.a8, &ptrNetfpSocket->bindInfo.innerIPSrc.addr.ipv6.u.a8[0], sizeof(Netfp_IP6N));
+    memcpy(ipv6HeaderPtr->DstAddr.u.a8, &ptrNetfpSocket->connectInfo.innerIPDst.addr.ipv6.u.a8[0], sizeof(Netfp_IP6N));
+
+    /* Initialize the Pseudo header which is used for UDP checksum calculations. */
+    Netfp_PseudoV6Hdr pseudoHdr;
+    pseudoHdr.DstAddr = ptrNetfpSocket->connectInfo.innerIPDst.addr.ipv6;
+    pseudoHdr.SrcAddr = ptrNetfpSocket->bindInfo.innerIPSrc.addr.ipv6;
+    pseudoHdr.PktLen  = 0;
+    pseudoHdr.Rsvd[0] = 0;
+    pseudoHdr.Rsvd[1] = 0;
+    pseudoHdr.Rsvd[2] = 0;
+    pseudoHdr.NxtHdr  = IPPROTO_UDP;
+
+    /* Calculate pseudo Header checksum value */
+    uint32_t initVal = 0;
+    int tmp1;
+    uint16_t* pw = (uint16_t *)&pseudoHdr;
+    for( tmp1=0; tmp1 < sizeof(Netfp_PseudoV6Hdr)/2; tmp1++ )
+    {
+        initVal = initVal + *pw;
+        pw++;
+    }
+
+    netHeadersPtr->partialChkSum = initVal;
+
+    __asm__ __volatile__ ("dsb ishst" : : : "memory");
+}
+
+static void prepareUdpHeader(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
+{
+    uint32_t ipHdrSize;
+    if(ptrNetfpSocket->family == Netfp_SockFamily_AF_INET)
+        ipHdrSize = IPHDR_SIZE;
+    else
+        ipHdrSize = IPv6HDR_SIZE;
+
+    NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[cfgIndex];
+    Netfp_UDPHeader* udpHeaderPtr = (Netfp_UDPHeader*)(netHeadersPtr->headerBuff + netHeadersPtr->l2HeaderSize + ipHdrSize);
     udpHeaderPtr->SrcPort = Netfp_htons(ptrNetfpSocket->localSockAddr.sin_port);
     udpHeaderPtr->DstPort = Netfp_htons(ptrNetfpSocket->peerSockAddr.sin_port);
     udpHeaderPtr->Length = 0;
@@ -3652,7 +3945,7 @@ static void updateIpHeaderDontFrag(Netfp_Socket* ptrNetfpSocket)
     ipHeaderPtr->FlagOff = Netfp_htons((ptrNetfpSocket->dontFrag) ? IPV4_FLAGS_DF_MASK : 0);
 }
 
-static void updateNetHeaderPkt(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo_FZM* ptrSockTxMetaInfo, uint16_t uniqueId, int incUDPHdr, uint16_t flagOff)
+static void updateNetHeaderPktIPv4(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo_FZM* ptrSockTxMetaInfo, uint16_t uniqueId, int incUDPHdr, uint16_t flagOff)
 {
     NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[ptrSockTxMetaInfo->l2CfgIndex];
     Netfp_IPHeader* ipHeaderPtr = (Netfp_IPHeader*)(ptrSockTxMetaInfo->ptrHeaderBuffer + netHeadersPtr->l2HeaderSize);
@@ -3671,15 +3964,54 @@ static void updateNetHeaderPkt(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInf
     Netfp_IPChecksum(ipHeaderPtr);
 }
 
+static void updateNetHeaderPktIPv6(Netfp_Socket* ptrNetfpSocket, Netfp_SockTxMetaInfo_FZM* ptrSockTxMetaInfo, int incUDPHdr)
+{
+    NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[ptrSockTxMetaInfo->l2CfgIndex];
+    Netfp_IPv6Header* ipHeaderPtr = (Netfp_IPv6Header*)(ptrSockTxMetaInfo->ptrHeaderBuffer + netHeadersPtr->l2HeaderSize);
+
+    uint32_t packetLen = Pktlib_getPacketLen(ptrSockTxMetaInfo->ptrPayload);
+
+    if(incUDPHdr)
+    {
+        Netfp_UDPHeader* udpHeaderPtr = (Netfp_UDPHeader*)(ptrSockTxMetaInfo->ptrHeaderBuffer + netHeadersPtr->l2HeaderSize + IPv6HDR_SIZE);
+        udpHeaderPtr->Length = Netfp_htons(UDPHDR_SIZE + packetLen);
+
+        if(ptrSockTxMetaInfo->hwUDPChksum)
+        {
+            uint32_t initVal = netHeadersPtr->partialChkSum + udpHeaderPtr->Length;
+            /* Convert to 16bits checksum */
+            initVal = (initVal & 0xFFFF) + (initVal >> 16);
+            volatile uint16_t checksum;
+            if(initVal >> 16)
+                checksum = (initVal & 0xFFFF) + (initVal >> 16);
+            else
+                checksum = initVal & 0xFFFF;
+
+            /* Prepare UDP checksum fields required by PA, these values will be
+               used when construct UDP checksum Tx command */
+            ptrSockTxMetaInfo->udpHwChkSum.startOffset   = netHeadersPtr->l2HeaderSize + IPv6HDR_SIZE;
+            ptrSockTxMetaInfo->udpHwChkSum.lengthBytes   = packetLen + UDPHDR_SIZE;
+            ptrSockTxMetaInfo->udpHwChkSum.initialSum    = Netfp_htons(checksum);
+        }
+    }
+
+    ipHeaderPtr->PayloadLength = Netfp_htons(packetLen + (incUDPHdr ? UDPHDR_SIZE : 0));
+}
+
 static void populateNewConfig(Netfp_Socket* ptrNetfpSocket, uint8_t cfgIndex)
 {
     prepareL2Header(ptrNetfpSocket, cfgIndex);
-    prepareIpHeader(ptrNetfpSocket, cfgIndex);
+
+    if(ptrNetfpSocket->family == Netfp_SockFamily_AF_INET)
+        prepareIPv4Header(ptrNetfpSocket, cfgIndex);
+    else
+        prepareIPv6Header(ptrNetfpSocket, cfgIndex);
+
     prepareUdpHeader(ptrNetfpSocket, cfgIndex);
     preparePaCommands(ptrNetfpSocket, cfgIndex);
 }
 
-void Netfp_incNonSecureIPv4Stats_FZM
+void Netfp_incNonSecureStats_FZM
 (
     Netfp_Socket*           ptrNetfpSocket,
     Netfp_SockTxMetaInfo_FZM*   ptrSockTxMetaInfo,
@@ -3711,13 +4043,18 @@ void Netfp_incNonSecureIPv4Stats_FZM
         return;
     }
 
+    /* We need to add the IP Header to each fragment. */
+    uint32_t headerSize;
+    if (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET)
+        headerSize = IPHDR_SIZE;
+    else
+        headerSize = IPv6HDR_SIZE + IPV6_FRAGHDR_SIZE;
+
     /* NO: This handles case (C) since the fragmentation is done by NETCP we need to do some estimations.
      * Determine the number of IP fragments which NETCP would generate. In order to acheive this we need
      * to start back from top; so get the payload which was passed to the IP layer. */
-    uint32_t payloadLen = packetLen - (netHeaders->l2HeaderSize + IPHDR_SIZE);
 
-    /* We need to add the IP Header to each fragment. */
-    uint32_t headerSize = IPHDR_SIZE;
+    uint32_t payloadLen = packetLen - (netHeaders->l2HeaderSize + headerSize);
 
     /* Compute the number of fragments which are generated: */
     while (1)
@@ -3770,7 +4107,31 @@ static int32_t Netfp_sendNonSecureIPv4Pkt_FZM
 {
     NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[ptrSockTxMetaInfo->l2CfgIndex];
     memcpy(ptrSockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize);
-    updateNetHeaderPkt(ptrNetfpSocket, ptrSockTxMetaInfo, Netfp_getUniqueId(), 1, 0);
+    updateNetHeaderPktIPv4(ptrNetfpSocket, ptrSockTxMetaInfo, Netfp_getUniqueId(), 1, 0);
+    /* Link the header packet to the payload packet. */
+    Pktlib_packetMerge(ptrNetfpSocket->ptrNetfpClient->cfg.pktlibInstHandle,
+        ptrSockTxMetaInfo->ptrHeaderPkt, ptrSockTxMetaInfo->ptrPayload,
+        ptrSockTxMetaInfo->ptrHeaderPkt);
+
+    /* Send the packet on the specified interface.
+     *  - Fragmentation support is needed from the NETCP */
+    *errCode = Netfp_transmitInterface_FZM(ptrNetfpSocket, ptrSockTxMetaInfo,
+        ptrSockTxMetaInfo->ptrHeaderPkt);
+    if (*errCode < 0)
+        return -1;
+    return 0;
+}
+
+static int32_t Netfp_sendNonSecureIPv6Pkt_FZM
+(
+    Netfp_Socket*           ptrNetfpSocket,
+    Netfp_SockTxMetaInfo_FZM*   ptrSockTxMetaInfo,
+    int32_t*                errCode
+)
+{
+    NetfpNetHeaders* netHeadersPtr = &ptrNetfpSocket->netHeaders[ptrSockTxMetaInfo->l2CfgIndex];
+    memcpy(ptrSockTxMetaInfo->ptrHeaderBuffer, netHeadersPtr->headerBuff, netHeadersPtr->headerSize);
+    updateNetHeaderPktIPv6(ptrNetfpSocket, ptrSockTxMetaInfo, 1);
     /* Link the header packet to the payload packet. */
     Pktlib_packetMerge(ptrNetfpSocket->ptrNetfpClient->cfg.pktlibInstHandle,
         ptrSockTxMetaInfo->ptrHeaderPkt, ptrSockTxMetaInfo->ptrPayload,
@@ -4765,6 +5126,18 @@ int32_t Netfp_send_FZM
         return -1;
     }
 
+    /* Populate the Socket Transmit Meta Information:
+     *  Use the configuration index to get the L2 active configuration */
+    sockTxMetaInfo.ptrPayload = ptrPayload;
+    sockTxMetaInfo.l2CfgIndex = ptrNetfpSocket->connectInfo.cfgIndex;
+    sockTxMetaInfo.hwUDPChksum = ptrNetfpSocket->udpChksumOffload;
+    /* Fragmentation will be done is hardware. */
+    sockTxMetaInfo.hwFragmentation = 1;
+
+    Netfp_SockL2ConnectInfo* ptrL2ConnectInfo = &ptrNetfpSocket->connectInfo.l2Info[sockTxMetaInfo.l2CfgIndex];
+    __builtin_prefetch(ptrL2ConnectInfo);
+    __builtin_prefetch(&ptrNetfpSocket->netHeaders[sockTxMetaInfo.l2CfgIndex]);
+
     /* Sockets should be connected before the packets can be sent out */
     if (unlikely((ptrNetfpSocket->sockState & NETFP_SOCKET_CONNECTED) == 0))
     {
@@ -4782,12 +5155,6 @@ int32_t Netfp_send_FZM
     /* Get the NETFP client. */
     Netfp_ClientMCB* ptrNetfpClient = ptrNetfpSocket->ptrNetfpClient;
 
-    /* Populate the Socket Transmit Meta Information:
-     *  Use the configuration index to get the L2 active configuration */
-    sockTxMetaInfo.ptrPayload             = ptrPayload;
-    sockTxMetaInfo.l2CfgIndex             = ptrNetfpSocket->connectInfo.cfgIndex;
-    Netfp_SockL2ConnectInfo* ptrL2ConnectInfo       = &ptrNetfpSocket->connectInfo.l2Info[sockTxMetaInfo.l2CfgIndex];
-
     /* Sanity Check: Ensure that the MTU in the L2 connect information is setup correctly. This should always be
      * a valid value for ACTIVE sockets. If this is not correct the event propagation has not been handled
      * correctly. */
@@ -4798,20 +5165,33 @@ int32_t Netfp_send_FZM
     }
 
     sockTxMetaInfo.headerSize = ptrNetfpSocket->netHeaders[sockTxMetaInfo.l2CfgIndex].headerSize;
-
     uint32_t packetSize = Pktlib_getPacketLen(ptrPayload) + ptrNetfpSocket->netHeaders[sockTxMetaInfo.l2CfgIndex].headerSize;
-    if (unlikely(packetSize > NETFP_PASS_MAX_BUFFER_SIZE))
+
+    if (packetSize > NETFP_PASS_MAX_BUFFER_SIZE)
     {
+        /* Fragmentation will be done is software. */
+        sockTxMetaInfo.hwFragmentation = 0;
         sockTxMetaInfo.l2ConnectInfo = ptrL2ConnectInfo;
         uint8_t innerDSCP = ptrNetfpSocket->connectInfo.fpDSCPMapping[ptrNetfpSocket->priority];
         sockTxMetaInfo.outerDSCP = ptrL2ConnectInfo->innerToOuterDSCPMap[innerDSCP];
 
         /* Fragment & send them out */
-        if (unlikely(Netfp_fragment_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode) < 0))
+        if (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET){
+            if (unlikely(Netfp_fragment_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode) < 0))
+            {
+                /* Error: Unable to fragment the packet. */
+                ptrNetfpSocket->extendedStats.numIPv4FragsFail++;
+                return -1;
+            }
+        }
+        else
         {
-            /* Error: Unable to fragment the packet. */
-            ptrNetfpSocket->extendedStats.numIPv4FragsFail++;
-            return -1;
+            if (unlikely(Netfp_fragment6_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode) < 0))
+            {
+                /* Error: Unable to fragment the packet. */
+                ptrNetfpSocket->extendedStats.numIPv6FragsFail++;
+                return -1;
+            }
         }
 
         /* Packets have been successfully transmitted. */
@@ -4830,13 +5210,21 @@ int32_t Netfp_send_FZM
     /* Get the allocated data buffer & length. */
     Pktlib_getDataBuffer(sockTxMetaInfo.ptrHeaderPkt, &sockTxMetaInfo.ptrHeaderBuffer, &headerBufferLen);
 
-    /* Is the socket secure? */
-    if (likely(ptrNetfpSocket->connectInfo.isSecure == 0)){
-        retVal = Netfp_sendNonSecureIPv4Pkt_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode);
-    } else{
-        System_printf("%s:%d, Not supported yet\n",__FUNCTION__,__LINE__);
-        Pktlib_freePacket(ptrNetfpClient->cfg.pktlibInstHandle, sockTxMetaInfo.ptrHeaderPkt);
+    if (ptrNetfpSocket->family == Netfp_SockFamily_AF_INET)
+    {
+        if (likely(ptrNetfpSocket->connectInfo.isSecure == 0))
+            retVal = Netfp_sendNonSecureIPv4Pkt_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode);
+        else
+            Pktlib_freePacket(ptrNetfpClient->cfg.pktlibInstHandle, sockTxMetaInfo.ptrHeaderPkt);
     }
+    else
+    {
+        if (likely(ptrNetfpSocket->connectInfo.isSecure == 0))
+            retVal = Netfp_sendNonSecureIPv6Pkt_FZM(ptrNetfpSocket, &sockTxMetaInfo, errCode);
+        else
+            Pktlib_freePacket(ptrNetfpClient->cfg.pktlibInstHandle, sockTxMetaInfo.ptrHeaderPkt);
+    }
+
     return retVal;
 }
 
@@ -5397,6 +5785,9 @@ int32_t Netfp_bind
     memset ((void *)ptrRemoteBindInfo, 0, sizeof(Netfp_SockBindInfo));
     memcpy (&ptrRemoteBindInfo->l3GPPcfg, &ptrNetfpSocket->bindInfo.l3GPPcfg, sizeof(ptrNetfpSocket->bindInfo.l3GPPcfg)); // fzm: https://e2eprivate.ti.com/nokia_siemens_networks/k2_-_fsm4_-_fzm_-_lrc_nokia/f/191/t/7108.aspx
 
+    /* Populate the errCode. */
+    memset ((void *)args[3].argBuffer, 0, sizeof(int32_t));
+
     /* Submit the JOB to JOSH for execution. */
     jobId = Josh_submitJob(jobHandle, argHandle, &result, errCode);
     if (jobId < 0)
@@ -5721,6 +6112,9 @@ int32_t Netfp_connect
     /* Populate the socket address. */
     ptrRemoteSockAddr = (Netfp_SockAddr*)args[1].argBuffer;
     memcpy (ptrRemoteSockAddr, ptrSockAddr, sizeof(Netfp_SockAddr));
+
+    /* Populate the errCode. */
+    memset ((void *)args[3].argBuffer, 0, sizeof(int32_t));
 
     /* Submit the JOB to JOSH for execution. */
     jobId = Josh_submitJob(jobHandle, argHandle, &result, errCode);

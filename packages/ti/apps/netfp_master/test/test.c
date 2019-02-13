@@ -72,7 +72,6 @@
 #include <ti/apps/netfp_master/netfp_master.h>
 #include <ti/runtime/pktlib/pktlib.h>
 #include <ti/runtime/resmgr/resmgr.h>
-#include <ti/runtime/uintc/uintc.h>
 #include <ti/runtime/name/name.h>
 #include <ti/runtime/name/name_db.h>
 

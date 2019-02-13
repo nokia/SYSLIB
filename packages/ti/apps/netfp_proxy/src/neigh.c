@@ -930,7 +930,8 @@ static void NetfpProxy_monitorNeighUpdates (int32_t action, int32_t type, void* 
              **************************************************************************************/
             switch (neighStatus)
             {
-                case NUD_REACHABLE:
+                case NUD_REACHABLE: //pass through
+                case NUD_PERMANENT:
                 {
                     /* The neighbor is now reachable; copy over the MAC address and notify the PROXY core */
                     memcpy ((void *)&ptrNeighEntry->targetMACAddress[0], (void *)&macAddress[0], 6);
@@ -1131,16 +1132,16 @@ static void NetfpProxy_neighProcessMessage(void)
                 /* Unregister for updates */
                 netmgr_unregister_neigh_updates (gNeighMgmtMCB.netMgrNeighHandle, ptrNeighEntry->neighEvtSubscHdl);
 
-                /* Release the target IP address */
-                if (ptrNeighEntry->ptrNLTargetIP)
-                    nl_addr_put (ptrNeighEntry->ptrNLTargetIP);
-
                 /* We have a valid entry and we now need to remove this from the neighbor list */
                 List_removeNode ((List_Node**)&gNeighMgmtMCB.ptrNeighMgmtList, (List_Node*)ptrNeighEntry);
 
                 /* Debug Message: */
                 nl_addr2str (ptrNeighEntry->ptrNLTargetIP, addressString, sizeof (addressString));
                 NetfpProxy_logMsg (NETFP_PROXY_LOG_DEBUG, "Debug: Deleted Neighbor entry %p for %s\n", ptrNeighEntry, addressString);
+
+                /* Release the target IP address */
+                if (ptrNeighEntry->ptrNLTargetIP)
+                    nl_addr_put (ptrNeighEntry->ptrNLTargetIP);
 
                 /* Free the allocated memory */
                 free (ptrNeighEntry);

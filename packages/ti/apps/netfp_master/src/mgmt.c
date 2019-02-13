@@ -134,10 +134,6 @@ static int32_t NetfpMaster_enablePortCapture
 {
     NetfpMaster_PortCapture*    ptrPortCapture;
     Netfp_PortCaptureCfg        portCaptureCfg;
-    Cppi_RxFlowCfg              rxFlowCfg;
-    Cppi_FlowHnd                flowHnd;
-    Qmss_Queue                  queueInfo;
-    uint8_t                     isAllocated;
 
     /* Is port capturing already enabled? */
     ptrPortCapture = NetfpMaster_findPortCapture (ptrNetfpMasterMCB, ptrPortCaptureRequest->portToBeCaptured,
@@ -147,80 +143,6 @@ static int32_t NetfpMaster_enablePortCapture
         /* YES. Port capturing is already enabled. We do not allow an edit. Applications should disable
          * port capturing and then reenable it with the new configuration. */
         *errCode = NETFP_MASTER_EINVAL;
-        return -1;
-    }
-
-    /* We need to create a flow for the Port capturing to work. Initialize the flow configuration
-     * block. */
-    memset ((void *)&rxFlowCfg, 0, sizeof(Cppi_RxFlowCfg));
-
-    /* Let CPPI pick the next available flow */
-    rxFlowCfg.flowIdNum         = CPPI_PARAM_NOT_SPECIFIED;
-
-    /* The destination of the receive flow is not known we will let the
-     * queue information in the routing entry determine the actual queue
-     * where the packet is to be pushed. */
-    rxFlowCfg.rx_dest_qmgr      = 0x0;
-    rxFlowCfg.rx_dest_qnum      = 0x0;
-
-    /* Setup the SOP & Descriptor type. */
-    rxFlowCfg.rx_sop_offset     = 0;
-    rxFlowCfg.rx_desc_type      = Cppi_DescType_HOST;
-
-    /* Enable PS info */
-    rxFlowCfg.rx_ps_location    = Cppi_PSLoc_PS_IN_DESC;
-    rxFlowCfg.rx_psinfo_present = 0x1;
-
-    /* Drop the packet, NO retry on starvation */
-    rxFlowCfg.rx_error_handling = 0x0;
-
-    /* EPIB info present */
-    rxFlowCfg.rx_einfo_present  = 0x1;
-
-    /* Disable tagging */
-    rxFlowCfg.rx_dest_tag_lo_sel= 0x0;
-    rxFlowCfg.rx_dest_tag_hi_sel= 0x0;
-    rxFlowCfg.rx_src_tag_lo_sel = 0x0;
-    rxFlowCfg.rx_src_tag_hi_sel = 0x0;
-
-    /* 1 Heap */
-    rxFlowCfg.rx_size_thresh0_en= 0x0;
-    rxFlowCfg.rx_size_thresh1_en= 0x0;
-    rxFlowCfg.rx_size_thresh2_en= 0x0;
-
-    /* No threshold sizes need to be configured. */
-    rxFlowCfg.rx_size_thresh0   = 0x0;
-    rxFlowCfg.rx_size_thresh1   = 0x0;
-    rxFlowCfg.rx_size_thresh2   = 0x0;
-
-    /* Free Descriptor Queues for Size 1, 2 and 3 do NOT need to be configured. */
-    rxFlowCfg.rx_fdq0_sz1_qmgr  = 0x0;
-    rxFlowCfg.rx_fdq0_sz1_qnum  = 0x0;
-    rxFlowCfg.rx_fdq0_sz2_qmgr  = 0x0;
-    rxFlowCfg.rx_fdq0_sz2_qnum  = 0x0;
-    rxFlowCfg.rx_fdq0_sz3_qmgr  = 0x0;
-    rxFlowCfg.rx_fdq0_sz3_qnum  = 0x0;
-
-    /* Heap Handle 0 has always got to be specified and is always written into the
-     * Free Descriptor Queue for Size 0. */
-    queueInfo = Qmss_getQueueNumber(ptrPortCaptureRequest->freeQueueId);
-    rxFlowCfg.rx_fdq0_sz0_qmgr  = queueInfo.qMgr;
-    rxFlowCfg.rx_fdq0_sz0_qnum  = ptrPortCaptureRequest->freeQueueId;
-
-    /* The Heap Handle 0 is also always used to pick all 'chained' packets. */
-    rxFlowCfg.rx_fdq1_qnum = ptrPortCaptureRequest->freeQueueId;
-    rxFlowCfg.rx_fdq1_qmgr = queueInfo.qMgr;
-    rxFlowCfg.rx_fdq2_qnum = ptrPortCaptureRequest->freeQueueId;
-    rxFlowCfg.rx_fdq2_qmgr = queueInfo.qMgr;
-    rxFlowCfg.rx_fdq3_qnum = ptrPortCaptureRequest->freeQueueId;
-    rxFlowCfg.rx_fdq3_qmgr = queueInfo.qMgr;
-
-    /* Create the flow */
-    flowHnd = Cppi_configureRxFlow(ptrNetfpMasterMCB->passCPDMAHandle, &rxFlowCfg, &isAllocated);
-    if (flowHnd == NULL)
-    {
-        /* Error: Unable to open the flow. */
-        *errCode = NETFP_MASTER_EINTERNAL;
         return -1;
     }
 
@@ -237,8 +159,7 @@ static int32_t NetfpMaster_enablePortCapture
 
     /* Populate the port capture request */
     memcpy ((void *)&ptrPortCapture->portCaptureRequest, (void *)ptrPortCaptureRequest, sizeof(NetfpMaster_SetPortCaptureRequest));
-    ptrPortCapture->flowId      = Cppi_getFlowId(flowHnd);
-    ptrPortCapture->flowHandle  = flowHnd;
+    ptrPortCapture->flowId      = ptrPortCaptureRequest->flowId;
 
     /* Register this with the NETFP master */
     NetfpMaster_listAdd ((NetfpMaster_ListNode**)&ptrNetfpMasterMCB->ptrPortCaptureList, (NetfpMaster_ListNode*)ptrPortCapture);
@@ -249,7 +170,7 @@ static int32_t NetfpMaster_enablePortCapture
     /* Populate the port configuration */
     portCaptureCfg.isEnable         = ptrPortCaptureRequest->isEnable;
     portCaptureCfg.portToBeCaptured = ptrPortCaptureRequest->portToBeCaptured;
-    portCaptureCfg.flowId           = ptrPortCapture->flowId;
+    portCaptureCfg.flowId           = ptrPortCaptureRequest->flowId;
     portCaptureCfg.queueId          = ptrPortCaptureRequest->dstQueue;
     portCaptureCfg.swInfo           = ptrPortCaptureRequest->swInfo;
     portCaptureCfg.direction        = ptrPortCaptureRequest->direction;
@@ -261,7 +182,6 @@ static int32_t NetfpMaster_enablePortCapture
         NetfpMaster_log(NetfpMaster_LogLevel_ERROR, "Error: Unable to enable port capturing [Error code %d]\n", *errCode);
 
         /* Cleanup the flow and port capture block. */
-        Cppi_closeRxFlow (ptrPortCapture->flowHandle);
         NetfpMaster_listRemoveNode ((NetfpMaster_ListNode**)&ptrNetfpMasterMCB->ptrPortCaptureList, (NetfpMaster_ListNode*)ptrPortCapture);
         free (ptrPortCapture);
         return -1;
@@ -335,9 +255,6 @@ int32_t NetfpMaster_disablePortCapture
     NetfpMaster_log(NetfpMaster_LogLevel_DEBUG, "Debug: Port capturing DISABLED Direction [%s] on %d Flow %d is deleted\n",
                     (portCaptureCfg.direction == Netfp_Direction_INBOUND) ? "Ingress" : "Egress",
                     portCaptureCfg.portToBeCaptured, ptrPortCapture->flowId);
-
-    /* Shutdown the flow: */
-    Cppi_closeRxFlow (ptrPortCapture->flowHandle);
 
     /* Deregister the block from the NETFP Master */
     NetfpMaster_listRemoveNode ((NetfpMaster_ListNode**)&ptrNetfpMasterMCB->ptrPortCaptureList, (NetfpMaster_ListNode*)ptrPortCapture);
